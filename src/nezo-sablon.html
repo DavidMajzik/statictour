@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>__TITLE__</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="pannellum.css?v=__VERSION__">
+<style>
+  :root { --brand: #940000; --brand-dark: #6B0000; }
+  html, body { margin: 0; height: 100%; background: #111; overflow: hidden;
+    font-family: 'Lato', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  #pano { position: absolute; inset: 0; }
+
+  /* Szobanév bal fent */
+  #roomLabel { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 5; background: rgba(0,0,0,.6); color: #fff; padding: 6px 16px;
+    border-radius: 999px; font-size: 15px; font-weight: 700; pointer-events: none;
+    white-space: nowrap; max-width: calc(100% - 140px); overflow: hidden; text-overflow: ellipsis; }
+
+  /* Új ablak gomb (csak beágyazva) */
+  #openFull { position: absolute; top: 10px; right: 10px; z-index: 5; display: none;
+    background: rgba(0,0,0,.6); color: #fff; border: 0; border-radius: 8px;
+    padding: 7px 10px; font: inherit; font-size: 13px; text-decoration: none; }
+  #openFull:hover { background: var(--brand); }
+
+  /* Ajtó-nyíl */
+  .door { width: 54px; height: 54px; border-radius: 50%; cursor: pointer;
+    background: rgba(148,0,0,.88); border: 3px solid #fff; box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+  .door::before { content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.8); animation: pulse 2s ease-out infinite; }
+  .door svg { position: absolute; inset: 0; margin: auto; width: 26px; height: 26px; }
+  .door:hover { background: var(--brand-dark); }
+  .door span { position: absolute; top: 58px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.7); color: #fff; padding: 3px 10px; border-radius: 6px;
+    font-size: 14px; font-weight: 700; white-space: nowrap; pointer-events: none; }
+  @keyframes pulse { 0% { transform: scale(1); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }
+
+  /* Bélyegképsáv */
+  #strip { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+    display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    overflow-x: auto; background: linear-gradient(transparent, rgba(0,0,0,.75));
+    scrollbar-width: thin; }
+  #strip button { flex: 0 0 auto; width: 120px; padding: 0; border: 3px solid transparent;
+    border-radius: 8px; overflow: hidden; background: #000; cursor: pointer; color: #fff;
+    font: inherit; font-size: 12px; font-weight: 700; text-align: left; position: relative; }
+  #strip button img { display: block; width: 100%; height: 66px; object-fit: cover; }
+  #strip button b { position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 6px;
+    background: rgba(0,0,0,.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #strip button.active { border-color: #fff; }
+  #strip button:focus-visible { outline: 3px solid #FFAAAA; }
+
+  /* Első betöltéskori segítség */
+  #hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    z-index: 6; background: rgba(0,0,0,.72); color: #fff; padding: 14px 20px;
+    border-radius: 12px; text-align: center; font-size: 15px; line-height: 1.5;
+    pointer-events: none; transition: opacity .6s; max-width: 80%; }
+  #hint.gone { opacity: 0; }
+
+  /* Pannellum vezérlők a sáv fölé */
+  .pnlm-controls-container { top: 10px !important; left: 10px !important; }
+  .pnlm-load-box { background: rgba(0,0,0,.7) !important; }
+  @media (max-width: 500px) {
+    #strip button { width: 96px; } #strip button img { height: 54px; }
+    #roomLabel { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div id="pano"></div>
+<div id="roomLabel"></div>
+<a id="openFull" target="_blank" rel="noopener" href="./">⤢ Teljes képernyő</a>
+<div id="hint">👆 Húzza a képet a körbenézéshez<br>⭕ Kattintson a nyilakra a továbblépéshez</div>
+<nav id="strip" aria-label="Helyiségek"></nav>
+
+<script src="pannellum.js?v=__VERSION__"></script>
+<script>
+var TURA = __TURA_JSON__;
+var V = '?v=' + TURA.version;
+var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+function byId(id) { for (var i = 0; i < TURA.rooms.length; i++) if (TURA.rooms[i].id === id) return TURA.rooms[i]; }
+
+function doorTooltip(div, name) {
+  div.innerHTML = ARROW;
+  var s = document.createElement('span'); s.textContent = name; div.appendChild(s);
+  div.setAttribute('title', name);
+}
+
+var scenes = {};
+TURA.rooms.forEach(function (r) {
+  scenes[r.id] = {
+    type: 'equirectangular', panorama: 'kepek/' + r.file + V,
+    yaw: r.view.yaw, pitch: r.view.pitch, hfov: r.view.hfov,
+    hotSpots: r.doors.filter(function (d) { return byId(d.target); }).map(function (d) {
+      return { type: 'scene', sceneId: d.target, pitch: d.pitch, yaw: d.yaw,
+        cssClass: 'door', createTooltipFunc: doorTooltip, createTooltipArgs: byId(d.target).name };
+    })
+  };
+});
+
+var viewer = pannellum.viewer('pano', {
+  default: { firstScene: TURA.start, autoLoad: true, sceneFadeDuration: 700,
+    mouseZoom: 'fullscreenonly', compass: false, showZoomCtrl: true,
+    strings: { loadButtonLabel: 'Kattintson<br>a betöltéshez', loadingLabel: 'Betöltés…',
+      bylineLabel: '%s', noPanoramaError: 'Nincs kép megadva.',
+      fileAccessError: 'A kép nem érhető el: %s', malformedURLError: 'Hibás kép-cím.',
+      genericWebGLError: 'Az Ön böngészője nem támogatja a 360°-os megjelenítést.',
+      textureSizeError: 'Ez a kép túl nagy az Ön eszközéhez.', unknownError: 'Ismeretlen hiba.' } },
+  scenes: scenes
+});
+
+// Bélyegképsáv
+var strip = document.getElementById('strip');
+TURA.rooms.forEach(function (r) {
+  var b = document.createElement('button');
+  b.dataset.id = r.id; b.setAttribute('aria-label', r.name);
+  b.innerHTML = '<img alt="" loading="lazy"><b></b>';
+  b.querySelector('img').src = 'kepek/' + r.thumb + V;
+  b.querySelector('b').textContent = r.name;
+  b.onclick = function () { if (viewer.getScene() !== r.id) viewer.loadScene(r.id); };
+  strip.appendChild(b);
+});
+if (TURA.rooms.length < 2) strip.style.display = 'none';
+
+function onScene(id) {
+  document.getElementById('roomLabel').textContent = (byId(id) || {}).name || '';
+  [].forEach.call(strip.children, function (b) {
+    var on = b.dataset.id === id; b.classList.toggle('active', on);
+    if (on && b.scrollIntoView) b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  });
+}
+viewer.on('scenechange', onScene);
+onScene(TURA.start);
+
+// Segítség eltüntetése első mozdulatra / 7 mp után
+var hint = document.getElementById('hint');
+function hideHint() { hint.classList.add('gone'); }
+document.getElementById('pano').addEventListener('pointerdown', hideHint, { once: true });
+setTimeout(hideHint, 7000);
+
+// Beágyazva (iframe) → "Teljes képernyő" link új lapon
+try { if (window.self !== window.top) document.getElementById('openFull').style.display = 'block'; }
+catch (e) { document.getElementById('openFull').style.display = 'block'; }
+</script>
+</body>
+</html>

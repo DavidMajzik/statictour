@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virtuális séta – szerkesztő</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root { --brand: #940000; --brand-dark: #6B0000; --brand-soft: #FFE0E0; --bg: #FFF5F5;
+    --text: #3a0a0a; --muted: #7a5555; --line: #f0cccc; --ok: #1d7a3a; --warn: #9a6200; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg);
+    color: var(--text); display: grid; grid-template-rows: auto 1fr; font-size: 15px; }
+  button { font: inherit; cursor: pointer; }
+  .btn { background: var(--brand); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: #fff; color: var(--brand); border: 2px solid var(--brand); padding: 7px 14px; }
+  .btn.ghost:hover { background: var(--brand-soft); }
+  .btn.big { font-size: 16px; padding: 12px 20px; }
+  .icon { background: none; border: 0; border-radius: 6px; padding: 4px 7px; font-size: 16px; line-height: 1; }
+  .icon:hover { background: var(--brand-soft); }
+  .icon:disabled { opacity: .3; cursor: default; background: none; }
+
+  header { display: flex; align-items: center; gap: 16px; padding: 10px 18px; background: #fff;
+    border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; color: var(--brand); white-space: nowrap; }
+  .steps { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
+  .steps span { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+    font-size: 13px; color: var(--muted); }
+  .steps span.done { background: #e7f5ea; border-color: #b9e0c3; color: var(--ok); }
+  .steps span.now { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 700; }
+  header .actions { display: flex; gap: 8px; }
+
+  .layout { display: grid; grid-template-columns: 340px 1fr; min-height: 0; }
+  aside { background: #fff; border-right: 1px solid var(--line); overflow-y: auto; padding: 16px; display: flex;
+    flex-direction: column; gap: 14px; }
+  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  input[type=text] { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: #fff; }
+  input[type=text]:focus { outline: 2px solid var(--brand); border-color: transparent; }
+
+  #drop { border: 2px dashed var(--brand); border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer;
+    background: var(--bg); color: var(--brand); font-weight: 700; transition: background .15s; }
+  #drop small { display: block; font-weight: 400; color: var(--muted); margin-top: 4px; }
+  #drop.over, #drop:hover { background: var(--brand-soft); }
+
+  h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 4px 0 -6px; }
+  #rooms { display: flex; flex-direction: column; gap: 8px; }
+  .room { display: grid; grid-template-columns: 76px 1fr; gap: 8px; padding: 8px; border: 2px solid var(--line);
+    border-radius: 10px; cursor: pointer; background: #fff; }
+  .room.active { border-color: var(--brand); background: var(--bg); }
+  .room img { width: 76px; height: 50px; object-fit: cover; border-radius: 6px; display: block; }
+  .room input { width: 100%; padding: 5px 7px; font-weight: 700; }
+  .room .row { display: flex; align-items: center; gap: 2px; margin-top: 4px; }
+  .room .row .spacer { flex: 1; }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--brand); color: #fff; }
+  .muted { color: var(--muted); font-size: 13px; }
+
+  #checks { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  #checks div { padding: 7px 10px; border-radius: 8px; background: var(--bg); line-height: 1.4; }
+  #checks .ok { background: #e7f5ea; color: var(--ok); font-weight: 700; }
+  #checks .warn { background: #fff4e0; color: var(--warn); }
+
+  main { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  .toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; flex-wrap: wrap; }
+  .toolbar h2 { margin: 0; font-size: 20px; flex: 1; min-width: 150px; }
+  #banner { display: none; margin: 0 16px 10px; padding: 10px 14px; border-radius: 10px; background: #fff4e0;
+    color: #6a4300; font-weight: 700; align-items: center; gap: 10px; }
+  #banner.show { display: flex; }
+  #banner button { margin-left: auto; }
+  .stage { position: relative; flex: 1; margin: 0 16px; border-radius: 12px; overflow: hidden; background: #222; min-height: 300px; }
+  #pano { position: absolute; inset: 0; }
+  .stage.placing #pano { cursor: crosshair; }
+  .stage.placing .pnlm-dragfix, .stage.placing .pnlm-ui { cursor: crosshair !important; }
+  #empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; text-align: center; padding: 30px; gap: 10px; background: #2b1a1a; }
+  #empty b { font-size: 22px; }
+  #doors { padding: 10px 16px 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; min-height: 54px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid var(--line);
+    border-radius: 999px; padding: 3px 4px 3px 12px; font-weight: 600; }
+
+  /* ajtó-nyíl (ugyanaz, mint a kész túrán) */
+  .door { width: 54px; height: 54px; border-radius: 50%; cursor: pointer; background: rgba(148,0,0,.88);
+    border: 3px solid #fff; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+  .door::before { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 3px solid rgba(255,255,255,.8);
+    animation: pulse 2s ease-out infinite; }
+  .door svg { position: absolute; inset: 0; margin: auto; width: 26px; height: 26px; }
+  .door span { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.7); color: #fff;
+    padding: 3px 10px; border-radius: 6px; font-size: 14px; font-weight: 700; white-space: nowrap; pointer-events: none; }
+  .door.flash { animation: flash .5s 3; }
+  @keyframes pulse { 0% { transform: scale(1); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }
+  @keyframes flash { 50% { background: #ffcc00; } }
+
+  /* modálok */
+  .modal { position: fixed; inset: 0; background: rgba(30,0,0,.55); display: none; align-items: center; justify-content: center;
+    z-index: 100; padding: 16px; }
+  .modal.show { display: flex; }
+  .modal > div { background: #fff; border-radius: 14px; padding: 22px; width: min(560px, 100%); max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+  .modal h2 { margin: 0 0 12px; color: var(--brand); font-size: 20px; }
+  .targets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 14px 0; }
+  .targets button { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 0; overflow: hidden; text-align: left; font-weight: 700; }
+  .targets button:hover { border-color: var(--brand); }
+  .targets img { width: 100%; height: 80px; object-fit: cover; display: block; }
+  .targets span { display: block; padding: 7px 9px; }
+  ol.howto { padding-left: 22px; line-height: 1.6; }
+  ol.howto li { margin-bottom: 6px; }
+  code, textarea.code { font-family: Consolas, monospace; font-size: 13px; }
+  code { background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+  textarea.code { width: 100%; height: 110px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; }
+  .right { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+  #busy { position: fixed; inset: 0; background: rgba(255,245,245,.85); display: none; align-items: center; justify-content: center;
+    z-index: 200; font-size: 18px; font-weight: 700; color: var(--brand); flex-direction: column; gap: 12px; }
+  #busy.show { display: flex; }
+  .spinner { width: 42px; height: 42px; border: 5px solid var(--brand-soft); border-top-color: var(--brand); border-radius: 50%;
+    animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff;
+    padding: 12px 18px; border-radius: 10px; opacity: 0; transition: .25s; z-index: 300; max-width: 90vw; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateX(-50%); }
+
+  @media (max-width: 860px) {
+    body { grid-template-rows: auto auto; }
+    .layout { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+    .stage { height: 60vh; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 Virtuális séta – szerkesztő</h1>
+  <div class="steps">
+    <span id="st1">1. Képek behúzása</span>
+    <span id="st2">2. Nyilak elhelyezése</span>
+    <span id="st3">3. Letöltés és feltöltés</span>
+  </div>
+  <div class="actions">
+    <button class="btn ghost" id="openBtn" title="Egy korábban letöltött seta.zip megnyitása szerkesztésre">📂 Korábbi túra megnyitása</button>
+    <button class="btn" id="saveBtn" disabled>💾 Kész túra letöltése</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <label class="field">A túra címe
+      <input type="text" id="title" value="Virtuális séta" maxlength="80">
+    </label>
+    <div id="drop" tabindex="0" role="button">
+      ➕ Húzd ide a 360°-os képeket<br>vagy kattints a tallózáshoz
+      <small>JPG vagy PNG, 2:1 arányú panorámák (a kamera alkalmazásából exportálva).<br>Több képet is kijelölhetsz egyszerre.</small>
+    </div>
+    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,.zip" multiple hidden>
+    <input type="file" id="zipInput" accept=".zip" hidden>
+
+    <h3>Helyiségek</h3>
+    <div id="rooms"><div class="muted">Még nincs kép. Húzd be őket fent.</div></div>
+
+    <h3>Ellenőrzés</h3>
+    <div id="checks"></div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <h2 id="curName">–</h2>
+      <button class="btn" id="placeBtn" disabled>➕ Nyíl elhelyezése</button>
+      <button class="btn ghost" id="viewBtn" disabled title="Amikor a látogató belép ebbe a helyiségbe, ebbe az irányba fog nézni">📷 Belépési nézet = amit most látok</button>
+    </div>
+    <div id="banner"><span id="bannerText"></span><button class="btn ghost" id="cancelPlace">Mégse (Esc)</button></div>
+    <div class="stage" id="stage">
+      <div id="pano"></div>
+      <div id="empty"><b>Kezdd a bal oldalon!</b><span>Húzd be az 5–6 darab 360°-os képet. Utána itt látod őket,<br>és rákattintva nyilakat tehetsz az ajtókra.</span></div>
+    </div>
+    <div id="doors"></div>
+  </main>
+</div>
+
+<!-- Cél-választó -->
+<div class="modal" id="pickModal"><div>
+  <h2>Hova vezessen ez a nyíl?</h2>
+  <div class="muted">Válaszd ki, melyik helyiségbe lép át a látogató, ha erre a nyílra kattint.</div>
+  <div class="targets" id="targets"></div>
+  <div class="right"><button class="btn ghost" id="pickCancel">Mégse</button></div>
+</div></div>
+
+<!-- Letöltés után -->
+<div class="modal" id="doneModal"><div>
+  <h2>✅ Letöltve: seta.zip</h2>
+  <p><b>Így teszed fel a weboldalra</b> (csak első alkalommal kell mind):</p>
+  <ol class="howto">
+    <li>Lépj be a <b>cPanel</b>-be → <b>Fájlkezelő</b> → nyisd meg a <code>public_html</code> mappát.</li>
+    <li>Fent: <b>Feltöltés</b> → válaszd ki a letöltött <code>seta.zip</code>-et.</li>
+    <li>Vissza a <code>public_html</code>-be, jobb klikk a <code>seta.zip</code>-en → <b>Extract / Kibontás</b>. Ha kérdezi, <b>felülírhatja</b> a régit.</li>
+    <li>Ellenőrzés: nyisd meg a <a href="https://www.tamaszotthon.hu/seta/" target="_blank" rel="noopener">tamaszotthon.hu/seta/</a> címet. (Ha a régi látszik: Ctrl+F5.)</li>
+    <li>A <code>seta.zip</code>-et utána törölheted a szerverről. <b>A gépeden viszont tartsd meg!</b> Ezzel tudod később szerkeszteni („Korábbi túra megnyitása”).</li>
+  </ol>
+  <p><b>Beágyazás egy oldalba</b> (csak egyszer kell): ezt a kódot tedd az oldal HTML-jébe oda, ahol a túrát látni szeretnéd:</p>
+  <textarea class="code" id="embedCode" readonly></textarea>
+  <div class="right">
+    <button class="btn ghost" id="copyEmbed">📋 Kód másolása</button>
+    <button class="btn" id="doneClose">Rendben</button>
+  </div>
+</div></div>
+
+<div id="busy"><div class="spinner"></div><div id="busyText">Dolgozom…</div></div>
+<div id="toast"></div>
+
+<script>
+var VIEWER_TEMPLATE = __VIEWER_TEMPLATE__;
+var PANNELLUM_BASE = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/';
+var MAX_WIDTH = 6144;          // 2× 4096 → régebbi telefonokon is megy
+var JPEG_QUALITY = 0.85;
+var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+
+var state = { title: 'Virtuális séta', start: null, rooms: [] };
+// room: { id, name, blob, url, preview, view:{yaw,pitch,hfov}, doors:[{id,yaw,pitch,target}] }
+var viewer = null, current = null, placing = false, dirty = false, everSaved = false;
+
+var $ = function (id) { return document.getElementById(id); };
+function uid(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function room(id) { return state.rooms.find(function (r) { return r.id === id; }); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function busy(text) { $('busyText').textContent = text || ''; $('busy').classList.toggle('show', !!text); }
+var toastTimer;
+function toast(msg, ms) {
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 3500);
+}
+function markDirty() { dirty = true; }
+window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+// ---------- Képek beolvasása ----------
+function loadBitmap(blob) {
+  if (window.createImageBitmap) return createImageBitmap(blob);
+  return new Promise(function (ok, fail) {
+    var img = new Image(); img.onload = function () { ok(img); }; img.onerror = fail; img.src = URL.createObjectURL(blob);
+  });
+}
+function canvasBlob(canvas, q) {
+  return new Promise(function (ok) { canvas.toBlob(ok, 'image/jpeg', q); });
+}
+function makePreview(bmp, view) {
+  return cropView(bmp, view || { yaw: 0, pitch: 0 }, 240, 135).toDataURL('image/jpeg', 0.75);
+}
+// Kis kép a sávhoz: a belépési nézet irányából vágva (körbeérő panorámánál kétszer rajzolva)
+function makeThumb(bmp, view) { return canvasBlob(cropView(bmp, view, 320, 180), 0.8); }
+function cropView(bmp, view, tw, th) {
+  var W = bmp.width, H = bmp.height;
+  var cw = W / 4, scale = tw / cw;
+  var xc = ((view.yaw / 360) + 0.5) * W, yc = H / 2 - (view.pitch / 180) * H;
+  var c = document.createElement('canvas'); c.width = tw; c.height = th;
+  var ctx = c.getContext('2d'), dw = W * scale, dh = H * scale;
+  var dx = tw / 2 - xc * scale, dy = Math.min(0, Math.max(th - dh, th / 2 - yc * scale));
+  [-dw, 0, dw].forEach(function (o) { ctx.drawImage(bmp, dx + o, dy, dw, dh); });
+  return c;
+}
+
+async function addImages(files) {
+  var list = [].slice.call(files);
+  var zip = list.find(function (f) { return /\.zip$/i.test(f.name); });
+  if (zip) return openZip(zip);
+  var skipped = [], added = 0;
+  for (var i = 0; i < list.length; i++) {
+    var f = list[i];
+    busy('Képek feldolgozása… ' + (i + 1) + ' / ' + list.length);
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { skipped.push(f.name + ' (nem JPG/PNG kép)'); continue; }
+    try {
+      var bmp = await loadBitmap(f);
+      var ratio = bmp.width / bmp.height;
+      if (Math.abs(ratio - 2) > 0.06) { skipped.push(f.name + ' (nem 360°-os panoráma – az arány ' + ratio.toFixed(2) + ':1, 2:1 kellene)'); continue; }
+      var w = Math.min(MAX_WIDTH, bmp.width); w -= w % 2;
+      var c = document.createElement('canvas'); c.width = w; c.height = w / 2;
+      c.getContext('2d').drawImage(bmp, 0, 0, w, w / 2);
+      var blob = await canvasBlob(c, JPEG_QUALITY);
+      var name = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) || 'Helyiség';
+      name = name.charAt(0).toUpperCase() + name.slice(1);
+      state.rooms.push({ id: uid('r'), name: name, blob: blob, url: URL.createObjectURL(blob), preview: makePreview(bmp),
+        view: { yaw: 0, pitch: 0, hfov: 100 }, doors: [] });
+      added++;
+    } catch (e) { console.error(e); skipped.push(f.name + ' (nem sikerült beolvasni)'); }
+  }
+  busy(null);
+  if (added) {
+    if (!state.start) state.start = state.rooms[0].id;
+    markDirty();
+    render();
+    rebuildViewer(current && room(current) ? current : state.rooms[state.rooms.length - added].id);
+    toast(added + ' kép hozzáadva. Nevezd át őket (pl. „Folyosó”, „Nappali”), majd tegyél nyilakat az ajtókra!', 5000);
+  }
+  if (skipped.length) alert('Ezeket kihagytam:\n\n• ' + skipped.join('\n• '));
+}
+
+// ---------- Néző ----------
+function doorTooltip(div, args) {
+  div.innerHTML = ARROW;
+  var s = document.createElement('span'); s.textContent = args.name; div.appendChild(s);
+  div.dataset.door = args.id;
+}
+function sceneConfig(r) {
+  return {
+    type: 'equirectangular', panorama: r.url, yaw: r.view.yaw, pitch: r.view.pitch, hfov: r.view.hfov,
+    hotSpots: r.doors.filter(function (d) { return room(d.target); }).map(function (d) {
+      return { id: d.id, type: 'scene', sceneId: d.target, pitch: d.pitch, yaw: d.yaw, cssClass: 'door',
+        createTooltipFunc: doorTooltip, createTooltipArgs: { name: room(d.target).name, id: d.id } };
+    })
+  };
+}
+// keep: {yaw,pitch,hfov} – a jelenlegi nézet megtartása újraépítéskor
+function rebuildViewer(sceneId, keep) {
+  if (viewer) { try { viewer.destroy(); } catch (e) {} viewer = null; }
+  $('empty').style.display = state.rooms.length ? 'none' : 'flex';
+  if (!state.rooms.length) { current = null; renderToolbar(); return; }
+  if (!room(sceneId)) sceneId = state.start || state.rooms[0].id;
+  var scenes = {};
+  state.rooms.forEach(function (r) { scenes[r.id] = sceneConfig(r); });
+  if (keep) { scenes[sceneId].yaw = keep.yaw; scenes[sceneId].pitch = keep.pitch; scenes[sceneId].hfov = keep.hfov; }
+  viewer = pannellum.viewer('pano', {
+    default: { firstScene: sceneId, autoLoad: true, sceneFadeDuration: keep ? 0 : 500, compass: false, ignoreGPanoXMP: true,
+      strings: { loadingLabel: 'Betöltés…' } },
+    scenes: scenes
+  });
+  // az ideiglenes nézet-felülírás ne ragadjon a jelenetre
+  if (keep) { var r0 = room(sceneId); scenes[sceneId].yaw = r0.view.yaw; scenes[sceneId].pitch = r0.view.pitch; scenes[sceneId].hfov = r0.view.hfov; }
+  viewer.on('scenechange', function (id) { current = id; render(); });
+  current = sceneId;
+  render();
+}
+function currentView() { return { yaw: viewer.getYaw(), pitch: viewer.getPitch(), hfov: viewer.getHfov() }; }
+
+// ---------- Nyíl elhelyezése ----------
+function setPlacing(on) {
+  placing = on && state.rooms.length > 1;
+  if (on && state.rooms.length < 2) { toast('Ehhez legalább 2 kép kell: legyen hova vezetnie a nyílnak.'); }
+  $('stage').classList.toggle('placing', placing);
+  $('banner').classList.toggle('show', placing);
+  $('bannerText').textContent = '🎯 Kattints a képen oda, ahová a nyilat szeretnéd (pl. az ajtóra). Húzással közben körbe is nézhetsz.';
+}
+var down = null;
+$('pano').addEventListener('pointerdown', function (e) { down = { x: e.clientX, y: e.clientY }; }, true);
+$('pano').addEventListener('pointerup', function (e) {
+  if (!placing || !down || !viewer) return;
+  var moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
+  if (moved > 6) return; // ez húzás volt, nem kattintás
+  var c = viewer.mouseEventToCoords(e);
+  setPlacing(false);
+  pickTarget(function (target) {
+    var r = room(current);
+    r.doors.push({ id: uid('d'), pitch: c[0], yaw: c[1], target: target });
+    markDirty();
+    rebuildViewer(current, currentView());
+    var back = room(target).doors.some(function (d) { return d.target === r.id; });
+    toast('✅ Nyíl kész → ' + room(target).name + (back ? '' : '. Tipp: a(z) „' + room(target).name + '” képen is tegyél egy visszavezető nyilat!'), 6000);
+  });
+}, true);
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { setPlacing(false); closeModal('pickModal'); }
+});
+
+var pickCb = null;
+function pickTarget(cb) {
+  pickCb = cb;
+  var box = $('targets'); box.innerHTML = '';
+  state.rooms.filter(function (r) { return r.id !== current; }).forEach(function (r) {
+    var b = document.createElement('button');
+    b.innerHTML = '<img alt=""><span></span>';
+    b.querySelector('img').src = r.preview; b.querySelector('span').textContent = r.name;
+    b.onclick = function () { closeModal('pickModal'); var f = pickCb; pickCb = null; f && f(r.id); };
+    box.appendChild(b);
+  });
+  $('pickModal').classList.add('show');
+}
+function closeModal(id) { $(id).classList.remove('show'); }
+$('pickCancel').onclick = function () { pickCb = null; closeModal('pickModal'); };
+
+// ---------- Megjelenítés ----------
+function render() {
+  $('title').value = state.title;
+  var box = $('rooms'); box.innerHTML = '';
+  if (!state.rooms.length) box.innerHTML = '<div class="muted">Még nincs kép. Húzd be őket fent.</div>';
+  state.rooms.forEach(function (r, i) {
+    var el = document.createElement('div');
+    el.className = 'room' + (r.id === current ? ' active' : '');
+    el.innerHTML = '<img alt=""><div><input type="text" maxlength="40" aria-label="Helyiség neve">' +
+      '<div class="row">' + (r.id === state.start ? '<span class="badge">⭐ Itt kezdődik</span>' :
+        '<button class="icon" data-a="start" title="Itt kezdődjön a séta">☆</button>') +
+      '<span class="spacer"></span>' +
+      '<button class="icon" data-a="up" title="Feljebb a sávban"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+      '<button class="icon" data-a="down" title="Lejjebb a sávban"' + (i === state.rooms.length - 1 ? ' disabled' : '') + '>↓</button>' +
+      '<button class="icon" data-a="del" title="Kép törlése">🗑</button></div></div>';
+    el.querySelector('img').src = r.preview;
+    var inp = el.querySelector('input'); inp.value = r.name;
+    inp.onclick = function (e) { e.stopPropagation(); };
+    inp.onchange = function () {
+      r.name = inp.value.trim() || 'Helyiség'; markDirty();
+      rebuildViewer(current, viewer ? currentView() : null);
+    };
+    el.onclick = function (e) {
+      var a = e.target.closest('[data-a]');
+      if (a) { e.stopPropagation(); return roomAction(a.dataset.a, r, i); }
+      if (viewer && current !== r.id) viewer.loadScene(r.id);
+    };
+    box.appendChild(el);
+  });
+  renderToolbar();
+  renderChecks();
+}
+function roomAction(a, r, i) {
+  var rs = state.rooms;
+  if (a === 'start') state.start = r.id;
+  if (a === 'up' && i > 0) { rs.splice(i - 1, 0, rs.splice(i, 1)[0]); }
+  if (a === 'down' && i < rs.length - 1) { rs.splice(i + 1, 0, rs.splice(i, 1)[0]); }
+  if (a === 'del') {
+    if (!confirm('Biztosan törlöd: „' + r.name + '”?\nA hozzá vezető nyilak is törlődnek.')) return;
+    rs.splice(i, 1);
+    rs.forEach(function (o) { o.doors = o.doors.filter(function (d) { return d.target !== r.id; }); });
+    if (state.start === r.id) state.start = rs.length ? rs[0].id : null;
+    markDirty();
+    return rebuildViewer(current === r.id ? state.start : current, current === r.id ? null : currentView());
+  }
+  markDirty(); render();
+}
+function renderToolbar() {
+  var r = room(current), has = !!r;
+  $('curName').textContent = has ? r.name : '–';
+  $('placeBtn').disabled = !has; $('viewBtn').disabled = !has;
+  $('saveBtn').disabled = !state.rooms.length;
+  var d = $('doors'); d.innerHTML = '';
+  if (!has) return;
+  if (!r.doors.length) { d.innerHTML = '<span class="muted">Ezen a képen még nincs nyíl. Nyomd meg a „➕ Nyíl elhelyezése” gombot, majd kattints az ajtóra.</span>'; return; }
+  d.insertAdjacentHTML('beforeend', '<span class="muted">Nyilak ezen a képen:</span>');
+  r.doors.forEach(function (door) {
+    var t = room(door.target); if (!t) return;
+    var c = document.createElement('span'); c.className = 'chip';
+    c.innerHTML = '<span></span><button class="icon" title="Mutasd">👁</button><button class="icon" title="Nyíl törlése">✕</button>';
+    c.firstChild.textContent = '→ ' + t.name;
+    var bs = c.querySelectorAll('button');
+    bs[0].onclick = function () {
+      viewer.lookAt(door.pitch, door.yaw, undefined, 600);
+      var el = document.querySelector('[data-door="' + door.id + '"]');
+      if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+    };
+    bs[1].onclick = function () {
+      r.doors = r.doors.filter(function (x) { return x !== door; }); markDirty();
+      rebuildViewer(current, currentView());
+    };
+    d.appendChild(c);
+  });
+  d.insertAdjacentHTML('beforeend', '<span class="muted">· A nyilakra kattintva ki is próbálhatod a sétát.</span>');
+}
+function renderChecks() {
+  var out = [], rs = state.rooms;
+  var hasDoors = rs.some(function (r) { return r.doors.length; });
+  $('st1').className = rs.length ? 'done' : 'now';
+  $('st2').className = !rs.length ? '' : hasDoors ? 'done' : 'now';
+  $('st3').className = rs.length && hasDoors ? (everSaved && !dirty ? 'done' : 'now') : '';
+  if (!rs.length) { $('checks').innerHTML = '<div>Tölts fel képeket a kezdéshez.</div>'; return; }
+  // bejárhatóság a kezdő szobából
+  var seen = {}, q = [state.start];
+  while (q.length) { var id = q.shift(); if (seen[id] || !room(id)) continue; seen[id] = 1; room(id).doors.forEach(function (d) { q.push(d.target); }); }
+  rs.forEach(function (r) {
+    if (rs.length > 1 && !r.doors.length) out.push(['warn', '⚠️ „' + esc(r.name) + '”: nincs rajta nyíl, innen csak az alsó sávval lehet továbbmenni.']);
+    else if (rs.length > 1 && !seen[r.id]) out.push(['warn', '⚠️ „' + esc(r.name) + '”: nyíllal nem lehet ide eljutni (csak az alsó sávból).']);
+  });
+  if (!out.length) out.push(['ok', '✅ Minden rendben, a túra letölthető!']);
+  else out.push(['', 'A figyelmeztetések nem akadályozzák a letöltést, csak javaslatok.']);
+  $('checks').innerHTML = out.map(function (o) { return '<div class="' + o[0] + '">' + o[1] + '</div>'; }).join('');
+}
+
+// ---------- Gombok ----------
+$('drop').onclick = function () { $('fileInput').click(); };
+$('drop').onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('fileInput').click(); } };
+$('fileInput').onchange = function () { addImages(this.files); this.value = ''; };
+['dragenter', 'dragover'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); $('drop').classList.add('over'); }); });
+['dragleave', 'drop'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); if (ev === 'drop' || !e.relatedTarget) $('drop').classList.remove('over'); }); });
+document.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) addImages(e.dataTransfer.files); });
+$('title').onchange = function () { state.title = this.value.trim() || 'Virtuális séta'; markDirty(); };
+$('placeBtn').onclick = function () { setPlacing(!placing); };
+$('cancelPlace').onclick = function () { setPlacing(false); };
+$('viewBtn').onclick = function () {
+  var r = room(current); r.view = currentView(); markDirty();
+  rebuildViewer(current, r.view);
+  loadBitmap(r.blob).then(function (b) { r.preview = makePreview(b, r.view); render(); });
+  toast('📷 Mentve: aki belép ide, ezt fogja először látni.');
+};
+$('openBtn').onclick = function () { $('zipInput').click(); };
+$('zipInput').onchange = function () { if (this.files[0]) openZip(this.files[0]); this.value = ''; };
+$('saveBtn').onclick = exportZip;
+$('doneClose').onclick = function () { closeModal('doneModal'); };
+$('copyEmbed').onclick = function () {
+  var t = $('embedCode'); t.select();
+  (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(
+    function () { toast('📋 Kód a vágólapon.'); }, function () { document.execCommand('copy'); toast('📋 Kód a vágólapon.'); });
+};
+
+// ---------- Letöltés (ZIP) ----------
+var libCache = null;
+async function fetchLibs() {
+  if (libCache) return libCache;
+  var r = await Promise.all(['pannellum.js', 'pannellum.css'].map(function (f) {
+    return fetch(PANNELLUM_BASE + f).then(function (res) { if (!res.ok) throw new Error(f); return res.text(); });
+  }));
+  return (libCache = { js: r[0], css: r[1] });
+}
+async function exportZip() {
+  if (!state.rooms.length) return;
+  setPlacing(false);
+  try {
+    busy('A túra összecsomagolása…');
+    var libs = await fetchLibs();
+    var version = Date.now().toString(36);
+    var zip = new JSZip(), dir = zip.folder('seta'), kepek = dir.folder('kepek');
+    var data = { format: 1, version: version, title: state.title, start: state.start, rooms: [] };
+    for (var i = 0; i < state.rooms.length; i++) {
+      var r = state.rooms[i];
+      busy('A túra összecsomagolása… ' + (i + 1) + ' / ' + state.rooms.length);
+      var file = r.id + '.jpg', thumb = r.id + '-kicsi.jpg';
+      kepek.file(file, r.blob);
+      kepek.file(thumb, await makeThumb(await loadBitmap(r.blob), r.view));
+      data.rooms.push({ id: r.id, name: r.name, file: file, thumb: thumb,
+        view: { yaw: +r.view.yaw.toFixed(2), pitch: +r.view.pitch.toFixed(2), hfov: +r.view.hfov.toFixed(1) },
+        doors: r.doors.filter(function (d) { return room(d.target); }).map(function (d) {
+          return { yaw: +d.yaw.toFixed(2), pitch: +d.pitch.toFixed(2), target: d.target };
+        }) });
+    }
+    var json = JSON.stringify(data);
+    dir.file('tura.json', JSON.stringify(data, null, 2));
+    dir.file('pannellum.js', libs.js);
+    dir.file('pannellum.css', libs.css);
+    dir.file('index.html', VIEWER_TEMPLATE
+      .split('__TITLE__').join(esc(state.title))
+      .split('__VERSION__').join(version)
+      .split('__TURA_JSON__').join(json.replace(/</g, '\\u003c')));
+    busy('ZIP készítése…');
+    var blob = await zip.generateAsync({ type: 'blob' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'seta.zip';
+    document.body.appendChild(a); a.click(); a.remove();
+    dirty = false; everSaved = true; busy(null); render();
+    $('embedCode').value = '<div style="position:relative;width:100%;aspect-ratio:16/9;min-height:380px;border-radius:12px;overflow:hidden;">\n' +
+      '  <iframe src="/seta/" title="' + esc(state.title) + '" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="fullscreen; gyroscope; accelerometer" allowfullscreen loading="lazy"></iframe>\n</div>';
+    $('doneModal').classList.add('show');
+  } catch (e) {
+    console.error(e); busy(null);
+    alert('Nem sikerült a letöltés. Van internetkapcsolat? (A szerkesztő a 360°-os nézőt a netről tölti le.)\n\nRészletek: ' + e.message);
+  }
+}
+
+// ---------- Korábbi túra megnyitása ----------
+async function openZip(file) {
+  if (state.rooms.length && !confirm('A mostani szerkesztés helyére betöltöm a(z) „' + file.name + '” túrát. Mehet?')) return;
+  try {
+    busy('Túra megnyitása…');
+    var zip = await JSZip.loadAsync(file);
+    var jf = Object.keys(zip.files).find(function (p) { return /(^|\/)tura\.json$/.test(p); });
+    if (!jf) throw new Error('Ez nem a szerkesztővel készült seta.zip (nincs benne tura.json).');
+    var base = jf.replace(/tura\.json$/, '');
+    var data = JSON.parse(await zip.file(jf).async('string'));
+    var rooms = [];
+    for (var i = 0; i < data.rooms.length; i++) {
+      var r = data.rooms[i];
+      busy('Túra megnyitása… ' + (i + 1) + ' / ' + data.rooms.length);
+      var entry = zip.file(base + 'kepek/' + r.file);
+      if (!entry) throw new Error('Hiányzó kép: ' + r.file);
+      var blob = new Blob([await entry.async('arraybuffer')], { type: 'image/jpeg' });
+      rooms.push({ id: r.id, name: r.name, blob: blob, url: URL.createObjectURL(blob), preview: makePreview(await loadBitmap(blob), r.view),
+        view: r.view || { yaw: 0, pitch: 0, hfov: 100 },
+        doors: (r.doors || []).map(function (d) { return { id: uid('d'), yaw: d.yaw, pitch: d.pitch, target: d.target }; }) });
+    }
+    state = { title: data.title || 'Virtuális séta', start: data.start, rooms: rooms };
+    dirty = false; everSaved = true; busy(null);
+    rebuildViewer(state.start);
+    toast('📂 Megnyitva: ' + rooms.length + ' helyiség. Szerkeszd, majd töltsd le újra.');
+  } catch (e) { console.error(e); busy(null); alert('Nem sikerült megnyitni.\n\n' + e.message); }
+}
+
+render();
+</script>
+</body>
+</html>
