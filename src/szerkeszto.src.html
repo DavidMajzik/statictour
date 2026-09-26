@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Virtuális séta – szerkesztő</title>
+<title>TÁMASZ Idősek Otthona – Virtuális séta szerkesztő</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12,8 +15,9 @@
     --text: #3a0a0a; --muted: #7a5555; --line: #f0cccc; --ok: #1d7a3a; --warn: #9a6200; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
-  body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg);
+  body { font-family: 'Lato', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg);
     color: var(--text); display: grid; grid-template-rows: auto 1fr; font-size: 15px; }
+  h1, .modal h2 { font-family: 'Playfair Display', Georgia, serif; }
   button { font: inherit; cursor: pointer; }
   .btn { background: var(--brand); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; }
   .btn:hover { background: var(--brand-dark); }
@@ -133,7 +137,7 @@
 </head>
 <body>
 <header>
-  <h1>🏠 Virtuális séta – szerkesztő</h1>
+  <h1>🏠 TÁMASZ – Virtuális séta szerkesztő</h1>
   <div class="steps">
     <span id="st1">1. Képek behúzása</span>
     <span id="st2">2. Nyilak elhelyezése</span>
@@ -148,7 +152,7 @@
 <div class="layout">
   <aside>
     <label class="field">A túra címe
-      <input type="text" id="title" value="Virtuális séta" maxlength="80">
+      <input type="text" id="title" value="TÁMASZ Idősek Otthona – Virtuális séta" maxlength="80">
     </label>
     <div id="drop" tabindex="0" role="button">
       ➕ Húzd ide a 360°-os képeket<br>vagy kattints a tallózáshoz
@@ -216,7 +220,7 @@ var MAX_WIDTH = 6144;          // 2× 4096 → régebbi telefonokon is megy
 var JPEG_QUALITY = 0.85;
 var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
 
-var state = { title: 'Virtuális séta', start: null, rooms: [] };
+var state = { title: 'TÁMASZ Idősek Otthona – Virtuális séta', start: null, rooms: [] };
 // room: { id, name, blob, url, preview, view:{yaw,pitch,hfov}, doors:[{id,yaw,pitch,target}] }
 var viewer = null, current = null, placing = false, dirty = false, everSaved = false;
 
