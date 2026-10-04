@@ -1,8 +1,8 @@
 # StaticTour
 
-**Build a 360° virtual tour in your browser. Download a folder. Upload it anywhere. Done.**
+**The stupid-simple 360° virtual tour builder for web developers. One HTML file. Static output. Your server. No subscription.**
 
-No account. No cloud. No monthly fee. The tour is a handful of static files that live on *your* server, forever.
+Open `editor.html`, drop in panoramas, click doors, download a folder, upload it to the client's host, send the invoice. No Docker, no desktop app, no account, no cloud.
 
 [![Live demo](docs/live-tour.jpg)](https://www.tamaszotthon.hu/virtualis-seta)
 
@@ -12,21 +12,21 @@ No account. No cloud. No monthly fee. The tour is a handful of static files that
 
 ## Why this exists
 
-Every virtual tour product on the market is a hosted SaaS: Kuula ($16–29/mo), Matterport ($10–69/mo), Theasys, Lapentor, 3DVista… You pay every month, your tour lives on their servers, and if you stop paying – or they shut down – it's gone. For a hotel, a dentist, a church, a nursing home or an art gallery that needs *one tour that works for five years*, that model is wrong.
+There is no shortage of 360° tour tools. Most are hosted subscriptions: Kuula ($20–48/mo), Matterport ($10–69/mo plus ~$20/mo per hosted space), Theasys ($20/mo). A couple will sell you a self-hosted export for a one-time $10 (Lapentor, Theasys). And there are open-source editors that export static sites – PanoPath (Docker + Marzipano), LibreTours 360 (self-hosted web app), panoradesk-360 (Electron) – which are good, and further along on features like floor plans and branding presets.
 
-StaticTour is the opposite:
+StaticTour's bet is narrower. A web developer who gets asked for "a virtual tour" once a year doesn't want to run a Docker container, install a desktop app, or open a SaaS account for a $200 line item. They want to open a file, click, get a folder, and move on.
 
-| | Hosted SaaS tours | StaticTour |
-|---|---|---|
-| Where does the tour live? | Their cloud | **Your server** (any static host) |
-| Monthly fee | $10–70 | **$0** |
-| Account required | Yes | **No** |
-| Works if the vendor disappears | No | **Yes** – it's just HTML + JPG |
-| Your images uploaded to a third party | Yes | **Never** – everything happens in your browser |
-| Embed on your site | iframe to their domain | iframe to **your own** `/tour/` folder |
-| Tracking / analytics scripts injected | Usually | **None** |
+| | Hosted SaaS (Kuula, Matterport…) | Self-hosted OSS (PanoPath, LibreTours…) | StaticTour |
+|---|---|---|---|
+| Install | None | Docker / server / Electron | **None – one HTML file** |
+| Account | Required | No | **No** |
+| Monthly fee | $10–70 | $0 | **$0** |
+| Where the tour lives | Their cloud | Your server | **Your server** |
+| Your photos leave your machine | Yes | No | **No** |
+| Floor plans, branding presets | Some | Yes | Not yet |
+| Lines of code to read before trusting it | n/a | thousands | **~600** |
 
-It was built for a nursing home that didn't want a subscription. Then it turned out that's what most small businesses want.
+It was built for a nursing home that didn't want a subscription, by a developer who didn't want to set up infrastructure for a one-off job.
 
 ## How it works
 
@@ -75,11 +75,19 @@ The editor needs an internet connection only to load Pannellum and JSZip from a 
 
 ## Pricing
 
-**This repo is free and MIT-licensed. Use it, fork it, sell tours made with it. No strings.**
+**This repo is free, complete, and MIT-licensed. Use it for clients, fork it, rebrand it, sell tours made with it. Nothing here is crippled.**
 
-A hosted version is coming for people who don't want to touch a repo: open a link, build the tour, pay **€0.50 per exported tour** – or €4.50 for 10, €6 for 20, €9.99/month if you build tours for a living. No subscription required for the one-off prices. Same self-hosted output, same "it lives on your server" promise.
+If enough people want it, there will be a paid tier for developers who build tours regularly. It would be **one-time, per tour, roughly €5–10** – the range Lapentor and Theasys already charge for a self-hosted export – and **never a subscription**. What it would add on top of this editor (none of which exists yet):
 
-**[→ Join the waitlist](https://tally.so/r/PLACEHOLDER)** if that sounds useful. I'll ship it if enough people want it.
+- cloud project save (no more "where did I put that ZIP")
+- white-label / branding presets and your own logo in the viewer
+- floor plan overlay with "you are here"
+- tiled multi-resolution output for 16K+ panoramas
+- agency templates and a shareable client preview link
+
+The free editor keeps everything it has today.
+
+**[→ Join the waitlist](https://tally.so/r/PLACEHOLDER)** – one question: would you use this for a client project? I'll build the paid tier if the answer is yes often enough, and leave the repo alone if it isn't.
 
 ## Tech stack
 
@@ -95,7 +103,7 @@ Depends entirely on whether anyone besides me wants this. Candidates, in rough o
 - [ ] Info hotspots (text / image popups on a panorama)
 - [ ] Floor plan overlay with "you are here"
 - [ ] Custom accent colour + logo in the export
-- [ ] Hosted editor with per-tour pricing (see above)
+- [ ] Paid tier: cloud save, white-label, floor plans (see Pricing)
 - [ ] WordPress plugin
 
 Open an issue if you need one of these – or something else.
@@ -103,6 +111,18 @@ Open an issue if you need one of these – or something else.
 ## Contributing
 
 PRs welcome. Keep it dependency-free and keep `editor.html` a single file. Run `node build.js` after editing anything in `src/`.
+
+## Alternatives
+
+Be honest with yourself about which one you need:
+
+- **[PanoPath](https://github.com/illerin/PanoPath)** – Docker, Marzipano-based, floor plans, branding, style presets, ZIP export. More features; needs a server to run the editor.
+- **[LibreTours 360](https://github.com/wishmerhill/libretours-360)** – self-hosted web editor + viewer.
+- **[panoradesk-360](https://github.com/hamzah1985/panoradesk-360)** – Electron desktop editor, Photo Sphere Viewer, MIT, offline exports.
+- **[Lapentor](https://lapentor.com/)** / **[Theasys](https://www.theasys.io/)** – hosted editors that sell a one-time $10 self-hosted export.
+- **[Pannellum](https://pannellum.org/) by hand** – if you're fine writing the scene JSON yourself, you don't need any of the above.
+
+StaticTour is the one you pick when "open a file" is the whole requirement.
 
 ## Credits
 

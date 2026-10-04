@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>StaticTour – self-hosted 360° virtual tours. No subscription.</title>
-<meta name="description" content="Build a 360° virtual tour in your browser, download a folder, upload it to your own server. Open source, no account, no cloud, no monthly fee.">
+<title>StaticTour – 360° virtual tours for web developers. One HTML file, static output.</title>
+<meta name="description" content="The stupid-simple 360° virtual tour builder for web developers. One HTML file, static output, your server. Open source, no Docker, no account, no subscription.">
 <meta property="og:title" content="StaticTour – self-hosted 360° virtual tours">
-<meta property="og:description" content="The virtual tour maker that lives on YOUR server. Open source. No subscription. No cloud lock-in.">
+<meta property="og:description" content="The stupid-simple 360° virtual tour builder for web developers. One HTML file. Static files. Your server. No subscription.">
 <meta property="og:image" content="https://davidmajzik.github.io/statictour/docs/live-tour.jpg">
 <meta property="og:url" content="https://davidmajzik.github.io/statictour/">
 <meta name="twitter:card" content="summary_large_image">
@@ -52,8 +52,8 @@
 </head>
 <body>
 <main>
-  <h1>360° virtual tours that live on <em>your</em> server.</h1>
-  <p class="lead">Build the tour in your browser. Download a folder. Upload it anywhere that serves static files. No account, no cloud, no monthly fee – ever.</p>
+  <h1>360° virtual tours for web developers.<br>One HTML file. Static output. <em>Your</em> server.</h1>
+  <p class="lead">Open the editor, drop in panoramas, click doors, download a folder, upload it to the client's host, send the invoice. No Docker, no desktop app, no account, no cloud, no subscription.</p>
 
   <div class="cta">
     <a class="btn primary" href="editor.html">Open the editor</a>
@@ -66,16 +66,17 @@
   <p class="cap">A nursing home in Hungary – 17 rooms, built with StaticTour, served as plain files from a cheap shared host.</p>
 
   <h2>The problem</h2>
-  <p>Every virtual tour product is a hosted subscription: Kuula, Matterport, Theasys, Lapentor, 3DVista. You pay monthly, the tour lives on their servers, and if you stop paying – or they pivot – it's gone. A dentist, a hotel, a church or a gallery needs <em>one tour that keeps working for five years</em>. That's not a subscription problem. It's a static-files problem.</p>
+  <p>There's no shortage of 360° tour tools. Most are hosted subscriptions (Kuula $20–48/mo, Matterport $10–69/mo plus per-space hosting). A couple sell a one-time $10 self-hosted export (Lapentor, Theasys). And there are open-source editors that export static sites – PanoPath, LibreTours 360, panoradesk-360 – but they want a Docker container, a server, or an Electron install.</p>
+  <p>A web developer who gets asked for "a virtual tour" once a year doesn't want any of that for a $200 line item. They want to open a file, click, get a folder, and move on. That's the whole product.</p>
 
   <table>
-    <tr><th></th><th>Hosted SaaS tours</th><th>StaticTour</th></tr>
-    <tr><td>Where the tour lives</td><td>Their cloud</td><td>Your server</td></tr>
-    <tr><td>Monthly fee</td><td>$10–70</td><td>$0</td></tr>
-    <tr><td>Account</td><td>Required</td><td>None</td></tr>
-    <tr><td>Still works if the vendor dies</td><td>No</td><td>Yes – it's HTML + JPG</td></tr>
-    <tr><td>Your photos uploaded to a 3rd party</td><td>Yes</td><td>Never</td></tr>
-    <tr><td>Tracking scripts in the embed</td><td>Usually</td><td>None</td></tr>
+    <tr><th></th><th>Hosted SaaS</th><th>Self-hosted OSS</th><th>StaticTour</th></tr>
+    <tr><td>Install</td><td>None</td><td>Docker / server / Electron</td><td>None – one HTML file</td></tr>
+    <tr><td>Account</td><td>Required</td><td>No</td><td>No</td></tr>
+    <tr><td>Monthly fee</td><td>$10–70</td><td>$0</td><td>$0</td></tr>
+    <tr><td>Where the tour lives</td><td>Their cloud</td><td>Your server</td><td>Your server</td></tr>
+    <tr><td>Photos leave your machine</td><td>Yes</td><td>No</td><td>No</td></tr>
+    <tr><td>Floor plans, branding presets</td><td>Some</td><td>Yes</td><td>Not yet</td></tr>
   </table>
 
   <h2>How it works</h2>
@@ -89,25 +90,19 @@
   <p>Keep the ZIP – re-open it in the editor any time to add rooms or move arrows.</p>
 
   <h2>Pricing</h2>
-  <p><strong>The editor on this page and the <a href="https://github.com/DavidMajzik/statictour">repo</a> are free. MIT. Use it for clients, fork it, rebrand it.</strong></p>
-  <p>A hosted version is planned for people who want a link instead of a repo – same self-hosted output, paid per tour, no subscription required:</p>
-  <div class="price">
-    <div><b>€0.50</b><span>1 tour</span></div>
-    <div><b>€4.50</b><span>10 tours</span></div>
-    <div><b>€6.00</b><span>20 tours</span></div>
-    <div><b>€9.99</b><span>per month, unlimited</span></div>
-  </div>
+  <p><strong>The editor on this page and the <a href="https://github.com/DavidMajzik/statictour">repo</a> are free, complete and MIT. Use it for clients, fork it, rebrand it.</strong></p>
+  <p>If enough developers want it, there'll be a paid tier: <strong>one-time, per tour, roughly €5–10</strong> – what Lapentor and Theasys already charge for a self-hosted export – and never a subscription. It would add what the free editor doesn't have: cloud project save, white-label branding and your logo in the viewer, floor plan overlay, tiled output for 16K+ panoramas, a client preview link. The free editor keeps everything it has today.</p>
 
   <div class="wait" id="waitlist">
-    <h2>Want the hosted version?</h2>
-    <p>Leave your email. I'll build it if enough people ask. No newsletter, one message when it ships.</p>
+    <h2>Would you use this for a client project?</h2>
+    <p>That's the only question. Leave your email and a yes/no. I'll build the paid tier if there are enough yeses, and leave the repo alone if there aren't. No newsletter.</p>
     <!-- TALLY: replace the src below with your Tally form embed URL (Share → Embed → Standard) -->
     <iframe data-tally-src="https://tally.so/embed/PLACEHOLDER?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" title="Waitlist"></iframe>
     <script async src="https://tally.so/widgets/embed.js"></script>
   </div>
 
   <h2>Who built this</h2>
-  <p>I'm <a href="https://github.com/DavidMajzik">Dávid</a>, a solo developer in Hungary. I made this for a nursing home that wanted a virtual walk-through without a monthly bill. It's been running in production since. My day job is <a href="https://vatidator.com">Vatidator</a>, an EU VAT compliance tool – which is why I already have the invoicing and VAT plumbing to sell this across the EU without a three-month detour.</p>
+  <p>I'm <a href="https://github.com/DavidMajzik">Dávid</a>, a solo developer in Hungary. I made this for a nursing home that wanted a virtual walk-through without a monthly bill, and didn't want to run infrastructure for a one-off job. It's been in production since. My day job is <a href="https://vatidator.com">Vatidator</a>, an EU VAT compliance tool.</p>
 
   <footer>
     <a href="https://github.com/DavidMajzik/statictour">GitHub</a> · built on <a href="https://pannellum.org/">Pannellum</a> · MIT License · <a href="mailto:david@vatidator.com">Contact</a>
