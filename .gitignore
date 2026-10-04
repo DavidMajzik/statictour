@@ -4,3 +4,6 @@ tour/
 seta/
 .DS_Store
 Thumbs.db
+
+# local-only, never commit
+docs/launch/
