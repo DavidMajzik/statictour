@@ -1,42 +1,39 @@
 <!doctype html>
-<html lang="hu">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TÁMASZ Idősek Otthona – Virtuális séta szerkesztő</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<title>StaticTour – 360° virtual tour editor</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  :root { --brand: #940000; --brand-dark: #6B0000; --brand-soft: #FFE0E0; --bg: #FFF5F5;
-    --text: #3a0a0a; --muted: #7a5555; --line: #f0cccc; --ok: #1d7a3a; --warn: #9a6200; }
+  :root { --accent: #2563eb; --accent-dark: #1d4ed8; --accent-soft: #dbeafe; --bg: #f8fafc;
+    --text: #0f172a; --muted: #64748b; --line: #e2e8f0; --ok: #15803d; --warn: #b45309; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
-  body { font-family: 'Lato', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg);
+  body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: var(--bg);
     color: var(--text); display: grid; grid-template-rows: auto 1fr; font-size: 15px; }
-  h1, .modal h2 { font-family: 'Playfair Display', Georgia, serif; }
   button { font: inherit; cursor: pointer; }
-  .btn { background: var(--brand); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; }
-  .btn:hover { background: var(--brand-dark); }
+  .btn { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; }
+  .btn:hover { background: var(--accent-dark); }
   .btn:disabled { opacity: .45; cursor: not-allowed; }
-  .btn.ghost { background: #fff; color: var(--brand); border: 2px solid var(--brand); padding: 7px 14px; }
-  .btn.ghost:hover { background: var(--brand-soft); }
+  .btn.ghost { background: #fff; color: var(--accent); border: 2px solid var(--accent); padding: 7px 14px; }
+  .btn.ghost:hover { background: var(--accent-soft); }
   .btn.big { font-size: 16px; padding: 12px 20px; }
   .icon { background: none; border: 0; border-radius: 6px; padding: 4px 7px; font-size: 16px; line-height: 1; }
-  .icon:hover { background: var(--brand-soft); }
+  .icon:hover { background: var(--accent-soft); }
   .icon:disabled { opacity: .3; cursor: default; background: none; }
 
   header { display: flex; align-items: center; gap: 16px; padding: 10px 18px; background: #fff;
     border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-  header h1 { font-size: 18px; margin: 0; color: var(--brand); white-space: nowrap; }
+  header h1 { font-size: 18px; margin: 0; color: var(--accent); white-space: nowrap; }
+  header h1 small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 6px; }
   .steps { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
   .steps span { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
     font-size: 13px; color: var(--muted); }
-  .steps span.done { background: #e7f5ea; border-color: #b9e0c3; color: var(--ok); }
-  .steps span.now { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 700; }
+  .steps span.done { background: #dcfce7; border-color: #86efac; color: var(--ok); }
+  .steps span.now { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
   header .actions { display: flex; gap: 8px; }
 
   .layout { display: grid; grid-template-columns: 340px 1fr; min-height: 0; }
@@ -44,35 +41,35 @@
     flex-direction: column; gap: 14px; }
   label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
   input[type=text] { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: #fff; }
-  input[type=text]:focus { outline: 2px solid var(--brand); border-color: transparent; }
+  input[type=text]:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
-  #drop { border: 2px dashed var(--brand); border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer;
-    background: var(--bg); color: var(--brand); font-weight: 700; transition: background .15s; }
+  #drop { border: 2px dashed var(--accent); border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer;
+    background: var(--bg); color: var(--accent); font-weight: 700; transition: background .15s; }
   #drop small { display: block; font-weight: 400; color: var(--muted); margin-top: 4px; }
-  #drop.over, #drop:hover { background: var(--brand-soft); }
+  #drop.over, #drop:hover { background: var(--accent-soft); }
 
   h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 4px 0 -6px; }
   #rooms { display: flex; flex-direction: column; gap: 8px; }
   .room { display: grid; grid-template-columns: 76px 1fr; gap: 8px; padding: 8px; border: 2px solid var(--line);
     border-radius: 10px; cursor: pointer; background: #fff; }
-  .room.active { border-color: var(--brand); background: var(--bg); }
+  .room.active { border-color: var(--accent); background: var(--bg); }
   .room img { width: 76px; height: 50px; object-fit: cover; border-radius: 6px; display: block; }
   .room input { width: 100%; padding: 5px 7px; font-weight: 700; }
   .room .row { display: flex; align-items: center; gap: 2px; margin-top: 4px; }
   .room .row .spacer { flex: 1; }
-  .badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--brand); color: #fff; }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--accent); color: #fff; }
   .muted { color: var(--muted); font-size: 13px; }
 
   #checks { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
   #checks div { padding: 7px 10px; border-radius: 8px; background: var(--bg); line-height: 1.4; }
-  #checks .ok { background: #e7f5ea; color: var(--ok); font-weight: 700; }
-  #checks .warn { background: #fff4e0; color: var(--warn); }
+  #checks .ok { background: #dcfce7; color: var(--ok); font-weight: 700; }
+  #checks .warn { background: #fef3c7; color: var(--warn); }
 
   main { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
   .toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; flex-wrap: wrap; }
   .toolbar h2 { margin: 0; font-size: 20px; flex: 1; min-width: 150px; }
-  #banner { display: none; margin: 0 16px 10px; padding: 10px 14px; border-radius: 10px; background: #fff4e0;
-    color: #6a4300; font-weight: 700; align-items: center; gap: 10px; }
+  #banner { display: none; margin: 0 16px 10px; padding: 10px 14px; border-radius: 10px; background: #fef3c7;
+    color: #78350f; font-weight: 700; align-items: center; gap: 10px; }
   #banner.show { display: flex; }
   #banner button { margin-left: auto; }
   .stage { position: relative; flex: 1; margin: 0 16px; border-radius: 12px; overflow: hidden; background: #222; min-height: 300px; }
@@ -80,14 +77,14 @@
   .stage.placing #pano { cursor: crosshair; }
   .stage.placing .pnlm-dragfix, .stage.placing .pnlm-ui { cursor: crosshair !important; }
   #empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: #fff; text-align: center; padding: 30px; gap: 10px; background: #2b1a1a; }
+    color: #fff; text-align: center; padding: 30px; gap: 10px; background: #1e293b; }
   #empty b { font-size: 22px; }
   #doors { padding: 10px 16px 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; min-height: 54px; }
   .chip { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid var(--line);
     border-radius: 999px; padding: 3px 4px 3px 12px; font-weight: 600; }
 
-  /* ajtó-nyíl (ugyanaz, mint a kész túrán) */
-  .door { width: 54px; height: 54px; border-radius: 50%; cursor: pointer; background: rgba(148,0,0,.88);
+  /* Door arrow hotspot (same look as in the exported tour) */
+  .door { width: 54px; height: 54px; border-radius: 50%; cursor: pointer; background: rgba(37,99,235,.88);
     border: 3px solid #fff; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,.5); }
   .door::before { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 3px solid rgba(255,255,255,.8);
     animation: pulse 2s ease-out infinite; }
@@ -96,31 +93,31 @@
     padding: 3px 10px; border-radius: 6px; font-size: 14px; font-weight: 700; white-space: nowrap; pointer-events: none; }
   .door.flash { animation: flash .5s 3; }
   @keyframes pulse { 0% { transform: scale(1); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }
-  @keyframes flash { 50% { background: #ffcc00; } }
+  @keyframes flash { 50% { background: #facc15; } }
 
-  /* modálok */
-  .modal { position: fixed; inset: 0; background: rgba(30,0,0,.55); display: none; align-items: center; justify-content: center;
+  /* Modals */
+  .modal { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: none; align-items: center; justify-content: center;
     z-index: 100; padding: 16px; }
   .modal.show { display: flex; }
   .modal > div { background: #fff; border-radius: 14px; padding: 22px; width: min(560px, 100%); max-height: 90vh; overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0,0,0,.3); }
-  .modal h2 { margin: 0 0 12px; color: var(--brand); font-size: 20px; }
+  .modal h2 { margin: 0 0 12px; color: var(--accent); font-size: 20px; }
   .targets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 14px 0; }
   .targets button { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 0; overflow: hidden; text-align: left; font-weight: 700; }
-  .targets button:hover { border-color: var(--brand); }
+  .targets button:hover { border-color: var(--accent); }
   .targets img { width: 100%; height: 80px; object-fit: cover; display: block; }
   .targets span { display: block; padding: 7px 9px; }
   ol.howto { padding-left: 22px; line-height: 1.6; }
   ol.howto li { margin-bottom: 6px; }
-  code, textarea.code { font-family: Consolas, monospace; font-size: 13px; }
+  code, textarea.code { font-family: Consolas, Menlo, monospace; font-size: 13px; }
   code { background: var(--bg); padding: 1px 5px; border-radius: 4px; }
   textarea.code { width: 100%; height: 110px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; }
   .right { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
-  #busy { position: fixed; inset: 0; background: rgba(255,245,245,.85); display: none; align-items: center; justify-content: center;
-    z-index: 200; font-size: 18px; font-weight: 700; color: var(--brand); flex-direction: column; gap: 12px; }
+  #busy { position: fixed; inset: 0; background: rgba(248,250,252,.85); display: none; align-items: center; justify-content: center;
+    z-index: 200; font-size: 18px; font-weight: 700; color: var(--accent); flex-direction: column; gap: 12px; }
   #busy.show { display: flex; }
-  .spinner { width: 42px; height: 42px; border: 5px solid var(--brand-soft); border-top-color: var(--brand); border-radius: 50%;
+  .spinner { width: 42px; height: 42px; border: 5px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%;
     animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff;
@@ -137,90 +134,89 @@
 </head>
 <body>
 <header>
-  <h1>🏠 TÁMASZ – Virtuális séta szerkesztő</h1>
+  <h1>🧭 StaticTour <small>360° tour editor</small></h1>
   <div class="steps">
-    <span id="st1">1. Képek behúzása</span>
-    <span id="st2">2. Nyilak elhelyezése</span>
-    <span id="st3">3. Letöltés és feltöltés</span>
+    <span id="st1">1. Add panoramas</span>
+    <span id="st2">2. Place arrows</span>
+    <span id="st3">3. Download &amp; upload</span>
   </div>
   <div class="actions">
-    <button class="btn ghost" id="openBtn" title="Egy korábban letöltött seta.zip megnyitása szerkesztésre">📂 Korábbi túra megnyitása</button>
-    <button class="btn" id="saveBtn" disabled>💾 Kész túra letöltése</button>
+    <button class="btn ghost" id="openBtn" title="Open a previously downloaded tour.zip for editing">📂 Open tour</button>
+    <button class="btn" id="saveBtn" disabled>💾 Download tour</button>
   </div>
 </header>
 
 <div class="layout">
   <aside>
-    <label class="field">A túra címe
-      <input type="text" id="title" value="TÁMASZ Idősek Otthona – Virtuális séta" maxlength="80">
+    <label class="field">Tour title
+      <input type="text" id="title" value="Virtual tour" maxlength="80">
     </label>
     <div id="drop" tabindex="0" role="button">
-      ➕ Húzd ide a 360°-os képeket<br>vagy kattints a tallózáshoz
-      <small>JPG vagy PNG, 2:1 arányú panorámák (a kamera alkalmazásából exportálva).<br>Több képet is kijelölhetsz egyszerre.</small>
+      ➕ Drop your 360° images here<br>or click to browse
+      <small>JPG or PNG equirectangular panoramas (2:1 aspect ratio, as exported by your 360° camera app).<br>You can select several at once.</small>
     </div>
     <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,.zip" multiple hidden>
     <input type="file" id="zipInput" accept=".zip" hidden>
 
-    <h3>Helyiségek</h3>
-    <div id="rooms"><div class="muted">Még nincs kép. Húzd be őket fent.</div></div>
+    <h3>Rooms</h3>
+    <div id="rooms"><div class="muted">No images yet. Drop them above.</div></div>
 
-    <h3>Ellenőrzés</h3>
+    <h3>Checks</h3>
     <div id="checks"></div>
   </aside>
 
   <main>
     <div class="toolbar">
       <h2 id="curName">–</h2>
-      <button class="btn" id="placeBtn" disabled>➕ Nyíl elhelyezése</button>
-      <button class="btn ghost" id="viewBtn" disabled title="Amikor a látogató belép ebbe a helyiségbe, ebbe az irányba fog nézni">📷 Belépési nézet = amit most látok</button>
+      <button class="btn" id="placeBtn" disabled>➕ Place arrow</button>
+      <button class="btn ghost" id="viewBtn" disabled title="Visitors entering this room will look in this direction first">📷 Set entry view = what I see now</button>
     </div>
-    <div id="banner"><span id="bannerText"></span><button class="btn ghost" id="cancelPlace">Mégse (Esc)</button></div>
+    <div id="banner"><span id="bannerText"></span><button class="btn ghost" id="cancelPlace">Cancel (Esc)</button></div>
     <div class="stage" id="stage">
       <div id="pano"></div>
-      <div id="empty"><b>Kezdd a bal oldalon!</b><span>Húzd be az 5–6 darab 360°-os képet. Utána itt látod őket,<br>és rákattintva nyilakat tehetsz az ajtókra.</span></div>
+      <div id="empty"><b>Start on the left</b><span>Drop in your 360° panoramas (5–6 is a good start). They show up here,<br>and you can click to place arrows on the doors.</span></div>
     </div>
     <div id="doors"></div>
   </main>
 </div>
 
-<!-- Cél-választó -->
+<!-- Target picker -->
 <div class="modal" id="pickModal"><div>
-  <h2>Hova vezessen ez a nyíl?</h2>
-  <div class="muted">Válaszd ki, melyik helyiségbe lép át a látogató, ha erre a nyílra kattint.</div>
+  <h2>Where should this arrow lead?</h2>
+  <div class="muted">Pick the room the visitor walks into when they click this arrow.</div>
   <div class="targets" id="targets"></div>
-  <div class="right"><button class="btn ghost" id="pickCancel">Mégse</button></div>
+  <div class="right"><button class="btn ghost" id="pickCancel">Cancel</button></div>
 </div></div>
 
-<!-- Letöltés után -->
+<!-- After download -->
 <div class="modal" id="doneModal"><div>
-  <h2>✅ Letöltve: seta.zip</h2>
-  <p><b>Így teszed fel a weboldalra</b> (csak első alkalommal kell mind):</p>
+  <h2>✅ Downloaded: tour.zip</h2>
+  <p><b>Putting it on your website:</b></p>
   <ol class="howto">
-    <li>Lépj be a <b>cPanel</b>-be → <b>Fájlkezelő</b> → nyisd meg a <code>public_html</code> mappát.</li>
-    <li>Fent: <b>Feltöltés</b> → válaszd ki a letöltött <code>seta.zip</code>-et.</li>
-    <li>Vissza a <code>public_html</code>-be, jobb klikk a <code>seta.zip</code>-en → <b>Extract / Kibontás</b>. Ha kérdezi, <b>felülírhatja</b> a régit.</li>
-    <li>Ellenőrzés: nyisd meg a <a href="https://www.tamaszotthon.hu/seta/" target="_blank" rel="noopener">tamaszotthon.hu/seta/</a> címet. (Ha a régi látszik: Ctrl+F5.)</li>
-    <li>A <code>seta.zip</code>-et utána törölheted a szerverről. <b>A gépeden viszont tartsd meg!</b> Ezzel tudod később szerkeszteni („Korábbi túra megnyitása”).</li>
+    <li>Unzip it. You get a <code>tour/</code> folder with <code>index.html</code>, <code>pannellum.js</code>, <code>pannellum.css</code>, <code>tour.json</code> and an <code>images/</code> folder.</li>
+    <li>Upload the whole <code>tour/</code> folder to your web server (FTP, cPanel, Netlify, GitHub Pages, S3 – anything that serves static files).</li>
+    <li>Open <code>https://yourdomain.com/tour/</code>. That is the tour. No backend, no API keys, nothing else to run.</li>
+    <li>Keep the <code>tour.zip</code> on your computer: <b>📂 Open tour</b> lets you re-open and edit it later.</li>
   </ol>
-  <p><b>Beágyazás egy oldalba</b> (csak egyszer kell): ezt a kódot tedd az oldal HTML-jébe oda, ahol a túrát látni szeretnéd:</p>
+  <p><b>Embed it in a page</b> – paste this where you want the tour to appear:</p>
   <textarea class="code" id="embedCode" readonly></textarea>
   <div class="right">
-    <button class="btn ghost" id="copyEmbed">📋 Kód másolása</button>
-    <button class="btn" id="doneClose">Rendben</button>
+    <button class="btn ghost" id="copyEmbed">📋 Copy code</button>
+    <button class="btn" id="doneClose">Done</button>
   </div>
 </div></div>
 
-<div id="busy"><div class="spinner"></div><div id="busyText">Dolgozom…</div></div>
+<div id="busy"><div class="spinner"></div><div id="busyText">Working…</div></div>
 <div id="toast"></div>
 
 <script>
-var VIEWER_TEMPLATE = __VIEWER_TEMPLATE__;
+var VIEWER_TEMPLATE = "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<meta name=\"robots\" content=\"noindex\">\n<meta name=\"generator\" content=\"StaticTour\">\n<title>__TITLE__<\/title>\n<link rel=\"stylesheet\" href=\"pannellum.css?v=__VERSION__\">\n<style>\n  :root { --accent: #2563eb; --accent-dark: #1d4ed8; }\n  html, body { margin: 0; height: 100%; background: #111; overflow: hidden;\n    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }\n  #pano { position: absolute; inset: 0; }\n\n  /* Current room name, top centre */\n  #roomLabel { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);\n    z-index: 5; background: rgba(0,0,0,.6); color: #fff; padding: 6px 16px;\n    border-radius: 999px; font-size: 15px; font-weight: 700; pointer-events: none;\n    white-space: nowrap; max-width: calc(100% - 140px); overflow: hidden; text-overflow: ellipsis; }\n\n  /* \"Open full screen\" link (only shown when embedded in an iframe) */\n  #openFull { position: absolute; top: 10px; right: 10px; z-index: 5; display: none;\n    background: rgba(0,0,0,.6); color: #fff; border: 0; border-radius: 8px;\n    padding: 7px 10px; font: inherit; font-size: 13px; text-decoration: none; }\n  #openFull:hover { background: var(--accent); }\n\n  /* Door arrow hotspot */\n  .door { width: 54px; height: 54px; border-radius: 50%; cursor: pointer;\n    background: rgba(37,99,235,.88); border: 3px solid #fff; box-sizing: border-box;\n    box-shadow: 0 2px 10px rgba(0,0,0,.5); }\n  .door::before { content: ''; position: absolute; inset: -3px; border-radius: 50%;\n    border: 3px solid rgba(255,255,255,.8); animation: pulse 2s ease-out infinite; }\n  .door svg { position: absolute; inset: 0; margin: auto; width: 26px; height: 26px; }\n  .door:hover { background: var(--accent-dark); }\n  .door span { position: absolute; top: 58px; left: 50%; transform: translateX(-50%);\n    background: rgba(0,0,0,.7); color: #fff; padding: 3px 10px; border-radius: 6px;\n    font-size: 14px; font-weight: 700; white-space: nowrap; pointer-events: none; }\n  @keyframes pulse { 0% { transform: scale(1); opacity: .9 } 100% { transform: scale(1.6); opacity: 0 } }\n\n  /* Thumbnail strip */\n  #strip { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;\n    display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));\n    overflow-x: auto; background: linear-gradient(transparent, rgba(0,0,0,.75));\n    scrollbar-width: thin; }\n  #strip button { flex: 0 0 auto; width: 120px; padding: 0; border: 3px solid transparent;\n    border-radius: 8px; overflow: hidden; background: #000; cursor: pointer; color: #fff;\n    font: inherit; font-size: 12px; font-weight: 700; text-align: left; position: relative; }\n  #strip button img { display: block; width: 100%; height: 66px; object-fit: cover; }\n  #strip button b { position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 6px;\n    background: rgba(0,0,0,.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n  #strip button.active { border-color: #fff; }\n  #strip button:focus-visible { outline: 3px solid #93c5fd; }\n\n  /* First-load hint */\n  #hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);\n    z-index: 6; background: rgba(0,0,0,.72); color: #fff; padding: 14px 20px;\n    border-radius: 12px; text-align: center; font-size: 15px; line-height: 1.5;\n    pointer-events: none; transition: opacity .6s; max-width: 80%; }\n  #hint.gone { opacity: 0; }\n\n  /* Keep Pannellum controls clear of the strip */\n  .pnlm-controls-container { top: 10px !important; left: 10px !important; }\n  .pnlm-load-box { background: rgba(0,0,0,.7) !important; }\n  @media (max-width: 500px) {\n    #strip button { width: 96px; } #strip button img { height: 54px; }\n    #roomLabel { font-size: 13px; }\n  }\n<\/style>\n<\/head>\n<body>\n<div id=\"pano\"><\/div>\n<div id=\"roomLabel\"><\/div>\n<a id=\"openFull\" target=\"_blank\" rel=\"noopener\" href=\"./\">⤢ Full screen<\/a>\n<div id=\"hint\">👆 Drag to look around<br>⭕ Click the arrows to walk through<\/div>\n<nav id=\"strip\" aria-label=\"Rooms\"><\/nav>\n\n<script src=\"pannellum.js?v=__VERSION__\"><\/script>\n<script>\nvar TOUR = __TOUR_JSON__;\nvar V = '?v=' + TOUR.version;\nvar ARROW = '<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 19V5M5 12l7-7 7 7\"/><\/svg>';\nfunction byId(id) { for (var i = 0; i < TOUR.rooms.length; i++) if (TOUR.rooms[i].id === id) return TOUR.rooms[i]; }\n\nfunction doorTooltip(div, name) {\n  div.innerHTML = ARROW;\n  var s = document.createElement('span'); s.textContent = name; div.appendChild(s);\n  div.setAttribute('title', name);\n}\n\nvar scenes = {};\nTOUR.rooms.forEach(function (r) {\n  scenes[r.id] = {\n    type: 'equirectangular', panorama: 'images/' + r.file + V,\n    yaw: r.view.yaw, pitch: r.view.pitch, hfov: r.view.hfov,\n    hotSpots: r.doors.filter(function (d) { return byId(d.target); }).map(function (d) {\n      return { type: 'scene', sceneId: d.target, pitch: d.pitch, yaw: d.yaw,\n        cssClass: 'door', createTooltipFunc: doorTooltip, createTooltipArgs: byId(d.target).name };\n    })\n  };\n});\n\nvar viewer = pannellum.viewer('pano', {\n  default: { firstScene: TOUR.start, autoLoad: true, sceneFadeDuration: 700,\n    mouseZoom: 'fullscreenonly', compass: false, showZoomCtrl: true },\n  scenes: scenes\n});\n\n// Thumbnail strip\nvar strip = document.getElementById('strip');\nTOUR.rooms.forEach(function (r) {\n  var b = document.createElement('button');\n  b.dataset.id = r.id; b.setAttribute('aria-label', r.name);\n  b.innerHTML = '<img alt=\"\" loading=\"lazy\"><b><\/b>';\n  b.querySelector('img').src = 'images/' + r.thumb + V;\n  b.querySelector('b').textContent = r.name;\n  b.onclick = function () { if (viewer.getScene() !== r.id) viewer.loadScene(r.id); };\n  strip.appendChild(b);\n});\nif (TOUR.rooms.length < 2) strip.style.display = 'none';\n\nfunction onScene(id) {\n  document.getElementById('roomLabel').textContent = (byId(id) || {}).name || '';\n  [].forEach.call(strip.children, function (b) {\n    var on = b.dataset.id === id; b.classList.toggle('active', on);\n    if (on && b.scrollIntoView) b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });\n  });\n}\nviewer.on('scenechange', onScene);\nonScene(TOUR.start);\n\n// Hide the hint on first interaction or after 7 s\nvar hint = document.getElementById('hint');\nfunction hideHint() { hint.classList.add('gone'); }\ndocument.getElementById('pano').addEventListener('pointerdown', hideHint, { once: true });\nsetTimeout(hideHint, 7000);\n\n// Embedded in an iframe → show the \"Full screen\" link (opens the tour in a new tab)\ntry { if (window.self !== window.top) document.getElementById('openFull').style.display = 'block'; }\ncatch (e) { document.getElementById('openFull').style.display = 'block'; }\n<\/script>\n<\/body>\n<\/html>\n";
 var PANNELLUM_BASE = 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/';
-var MAX_WIDTH = 6144;          // 2× 4096 → régebbi telefonokon is megy
+var MAX_WIDTH = 6144;          // 2 × 4096 → still works on older phones' WebGL texture limits
 var JPEG_QUALITY = 0.85;
 var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
 
-var state = { title: 'TÁMASZ Idősek Otthona – Virtuális séta', start: null, rooms: [] };
+var state = { title: 'Virtual tour', start: null, rooms: [] };
 // room: { id, name, blob, url, preview, view:{yaw,pitch,hfov}, doors:[{id,yaw,pitch,target}] }
 var viewer = null, current = null, placing = false, dirty = false, everSaved = false;
 
@@ -237,7 +233,7 @@ function toast(msg, ms) {
 function markDirty() { dirty = true; }
 window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 
-// ---------- Képek beolvasása ----------
+// ---------- Image loading ----------
 function loadBitmap(blob) {
   if (window.createImageBitmap) return createImageBitmap(blob);
   return new Promise(function (ok, fail) {
@@ -250,7 +246,7 @@ function canvasBlob(canvas, q) {
 function makePreview(bmp, view) {
   return cropView(bmp, view || { yaw: 0, pitch: 0 }, 240, 135).toDataURL('image/jpeg', 0.75);
 }
-// Kis kép a sávhoz: a belépési nézet irányából vágva (körbeérő panorámánál kétszer rajzolva)
+// Strip thumbnail: cropped from the entry-view direction (panorama drawn 3× so the crop wraps around)
 function makeThumb(bmp, view) { return canvasBlob(cropView(bmp, view, 320, 180), 0.8); }
 function cropView(bmp, view, tw, th) {
   var W = bmp.width, H = bmp.height;
@@ -270,22 +266,22 @@ async function addImages(files) {
   var skipped = [], added = 0;
   for (var i = 0; i < list.length; i++) {
     var f = list[i];
-    busy('Képek feldolgozása… ' + (i + 1) + ' / ' + list.length);
-    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { skipped.push(f.name + ' (nem JPG/PNG kép)'); continue; }
+    busy('Processing images… ' + (i + 1) + ' / ' + list.length);
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { skipped.push(f.name + ' (not a JPG/PNG image)'); continue; }
     try {
       var bmp = await loadBitmap(f);
       var ratio = bmp.width / bmp.height;
-      if (Math.abs(ratio - 2) > 0.06) { skipped.push(f.name + ' (nem 360°-os panoráma – az arány ' + ratio.toFixed(2) + ':1, 2:1 kellene)'); continue; }
+      if (Math.abs(ratio - 2) > 0.06) { skipped.push(f.name + ' (not a 360° panorama – aspect ratio is ' + ratio.toFixed(2) + ':1, expected 2:1)'); continue; }
       var w = Math.min(MAX_WIDTH, bmp.width); w -= w % 2;
       var c = document.createElement('canvas'); c.width = w; c.height = w / 2;
       c.getContext('2d').drawImage(bmp, 0, 0, w, w / 2);
       var blob = await canvasBlob(c, JPEG_QUALITY);
-      var name = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) || 'Helyiség';
+      var name = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) || 'Room';
       name = name.charAt(0).toUpperCase() + name.slice(1);
       state.rooms.push({ id: uid('r'), name: name, blob: blob, url: URL.createObjectURL(blob), preview: makePreview(bmp),
         view: { yaw: 0, pitch: 0, hfov: 100 }, doors: [] });
       added++;
-    } catch (e) { console.error(e); skipped.push(f.name + ' (nem sikerült beolvasni)'); }
+    } catch (e) { console.error(e); skipped.push(f.name + ' (could not be read)'); }
   }
   busy(null);
   if (added) {
@@ -293,12 +289,12 @@ async function addImages(files) {
     markDirty();
     render();
     rebuildViewer(current && room(current) ? current : state.rooms[state.rooms.length - added].id);
-    toast(added + ' kép hozzáadva. Nevezd át őket (pl. „Folyosó”, „Nappali”), majd tegyél nyilakat az ajtókra!', 5000);
+    toast(added + ' image(s) added. Rename them (e.g. "Hallway", "Lobby"), then place arrows on the doors.', 5000);
   }
-  if (skipped.length) alert('Ezeket kihagytam:\n\n• ' + skipped.join('\n• '));
+  if (skipped.length) alert('Skipped these files:\n\n• ' + skipped.join('\n• '));
 }
 
-// ---------- Néző ----------
+// ---------- Viewer ----------
 function doorTooltip(div, args) {
   div.innerHTML = ARROW;
   var s = document.createElement('span'); s.textContent = args.name; div.appendChild(s);
@@ -313,7 +309,7 @@ function sceneConfig(r) {
     })
   };
 }
-// keep: {yaw,pitch,hfov} – a jelenlegi nézet megtartása újraépítéskor
+// keep: {yaw,pitch,hfov} – preserve the current camera when rebuilding
 function rebuildViewer(sceneId, keep) {
   if (viewer) { try { viewer.destroy(); } catch (e) {} viewer = null; }
   $('empty').style.display = state.rooms.length ? 'none' : 'flex';
@@ -323,11 +319,10 @@ function rebuildViewer(sceneId, keep) {
   state.rooms.forEach(function (r) { scenes[r.id] = sceneConfig(r); });
   if (keep) { scenes[sceneId].yaw = keep.yaw; scenes[sceneId].pitch = keep.pitch; scenes[sceneId].hfov = keep.hfov; }
   viewer = pannellum.viewer('pano', {
-    default: { firstScene: sceneId, autoLoad: true, sceneFadeDuration: keep ? 0 : 500, compass: false, ignoreGPanoXMP: true,
-      strings: { loadingLabel: 'Betöltés…' } },
+    default: { firstScene: sceneId, autoLoad: true, sceneFadeDuration: keep ? 0 : 500, compass: false, ignoreGPanoXMP: true },
     scenes: scenes
   });
-  // az ideiglenes nézet-felülírás ne ragadjon a jelenetre
+  // don't let the temporary camera override stick to the scene config
   if (keep) { var r0 = room(sceneId); scenes[sceneId].yaw = r0.view.yaw; scenes[sceneId].pitch = r0.view.pitch; scenes[sceneId].hfov = r0.view.hfov; }
   viewer.on('scenechange', function (id) { current = id; render(); });
   current = sceneId;
@@ -335,20 +330,20 @@ function rebuildViewer(sceneId, keep) {
 }
 function currentView() { return { yaw: viewer.getYaw(), pitch: viewer.getPitch(), hfov: viewer.getHfov() }; }
 
-// ---------- Nyíl elhelyezése ----------
+// ---------- Placing arrows ----------
 function setPlacing(on) {
   placing = on && state.rooms.length > 1;
-  if (on && state.rooms.length < 2) { toast('Ehhez legalább 2 kép kell: legyen hova vezetnie a nyílnak.'); }
+  if (on && state.rooms.length < 2) { toast('You need at least 2 images – the arrow has to lead somewhere.'); }
   $('stage').classList.toggle('placing', placing);
   $('banner').classList.toggle('show', placing);
-  $('bannerText').textContent = '🎯 Kattints a képen oda, ahová a nyilat szeretnéd (pl. az ajtóra). Húzással közben körbe is nézhetsz.';
+  $('bannerText').textContent = '🎯 Click where the arrow should go (e.g. on a door). You can still drag to look around.';
 }
 var down = null;
 $('pano').addEventListener('pointerdown', function (e) { down = { x: e.clientX, y: e.clientY }; }, true);
 $('pano').addEventListener('pointerup', function (e) {
   if (!placing || !down || !viewer) return;
   var moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
-  if (moved > 6) return; // ez húzás volt, nem kattintás
+  if (moved > 6) return; // that was a drag, not a click
   var c = viewer.mouseEventToCoords(e);
   setPlacing(false);
   pickTarget(function (target) {
@@ -357,7 +352,7 @@ $('pano').addEventListener('pointerup', function (e) {
     markDirty();
     rebuildViewer(current, currentView());
     var back = room(target).doors.some(function (d) { return d.target === r.id; });
-    toast('✅ Nyíl kész → ' + room(target).name + (back ? '' : '. Tipp: a(z) „' + room(target).name + '” képen is tegyél egy visszavezető nyilat!'), 6000);
+    toast('✅ Arrow placed → ' + room(target).name + (back ? '' : '. Tip: add an arrow back from "' + room(target).name + '" too.'), 6000);
   });
 }, true);
 document.addEventListener('keydown', function (e) {
@@ -380,26 +375,26 @@ function pickTarget(cb) {
 function closeModal(id) { $(id).classList.remove('show'); }
 $('pickCancel').onclick = function () { pickCb = null; closeModal('pickModal'); };
 
-// ---------- Megjelenítés ----------
+// ---------- Rendering ----------
 function render() {
   $('title').value = state.title;
   var box = $('rooms'); box.innerHTML = '';
-  if (!state.rooms.length) box.innerHTML = '<div class="muted">Még nincs kép. Húzd be őket fent.</div>';
+  if (!state.rooms.length) box.innerHTML = '<div class="muted">No images yet. Drop them above.</div>';
   state.rooms.forEach(function (r, i) {
     var el = document.createElement('div');
     el.className = 'room' + (r.id === current ? ' active' : '');
-    el.innerHTML = '<img alt=""><div><input type="text" maxlength="40" aria-label="Helyiség neve">' +
-      '<div class="row">' + (r.id === state.start ? '<span class="badge">⭐ Itt kezdődik</span>' :
-        '<button class="icon" data-a="start" title="Itt kezdődjön a séta">☆</button>') +
+    el.innerHTML = '<img alt=""><div><input type="text" maxlength="40" aria-label="Room name">' +
+      '<div class="row">' + (r.id === state.start ? '<span class="badge">⭐ Start</span>' :
+        '<button class="icon" data-a="start" title="Start the tour here">☆</button>') +
       '<span class="spacer"></span>' +
-      '<button class="icon" data-a="up" title="Feljebb a sávban"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
-      '<button class="icon" data-a="down" title="Lejjebb a sávban"' + (i === state.rooms.length - 1 ? ' disabled' : '') + '>↓</button>' +
-      '<button class="icon" data-a="del" title="Kép törlése">🗑</button></div></div>';
+      '<button class="icon" data-a="up" title="Move up in the strip"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+      '<button class="icon" data-a="down" title="Move down in the strip"' + (i === state.rooms.length - 1 ? ' disabled' : '') + '>↓</button>' +
+      '<button class="icon" data-a="del" title="Remove image">🗑</button></div></div>';
     el.querySelector('img').src = r.preview;
     var inp = el.querySelector('input'); inp.value = r.name;
     inp.onclick = function (e) { e.stopPropagation(); };
     inp.onchange = function () {
-      r.name = inp.value.trim() || 'Helyiség'; markDirty();
+      r.name = inp.value.trim() || 'Room'; markDirty();
       rebuildViewer(current, viewer ? currentView() : null);
     };
     el.onclick = function (e) {
@@ -418,7 +413,7 @@ function roomAction(a, r, i) {
   if (a === 'up' && i > 0) { rs.splice(i - 1, 0, rs.splice(i, 1)[0]); }
   if (a === 'down' && i < rs.length - 1) { rs.splice(i + 1, 0, rs.splice(i, 1)[0]); }
   if (a === 'del') {
-    if (!confirm('Biztosan törlöd: „' + r.name + '”?\nA hozzá vezető nyilak is törlődnek.')) return;
+    if (!confirm('Remove "' + r.name + '"?\nArrows leading to it will be removed too.')) return;
     rs.splice(i, 1);
     rs.forEach(function (o) { o.doors = o.doors.filter(function (d) { return d.target !== r.id; }); });
     if (state.start === r.id) state.start = rs.length ? rs[0].id : null;
@@ -434,12 +429,12 @@ function renderToolbar() {
   $('saveBtn').disabled = !state.rooms.length;
   var d = $('doors'); d.innerHTML = '';
   if (!has) return;
-  if (!r.doors.length) { d.innerHTML = '<span class="muted">Ezen a képen még nincs nyíl. Nyomd meg a „➕ Nyíl elhelyezése” gombot, majd kattints az ajtóra.</span>'; return; }
-  d.insertAdjacentHTML('beforeend', '<span class="muted">Nyilak ezen a képen:</span>');
+  if (!r.doors.length) { d.innerHTML = '<span class="muted">No arrows in this room yet. Click "➕ Place arrow", then click on a door.</span>'; return; }
+  d.insertAdjacentHTML('beforeend', '<span class="muted">Arrows in this room:</span>');
   r.doors.forEach(function (door) {
     var t = room(door.target); if (!t) return;
     var c = document.createElement('span'); c.className = 'chip';
-    c.innerHTML = '<span></span><button class="icon" title="Mutasd">👁</button><button class="icon" title="Nyíl törlése">✕</button>';
+    c.innerHTML = '<span></span><button class="icon" title="Show">👁</button><button class="icon" title="Remove arrow">✕</button>';
     c.firstChild.textContent = '→ ' + t.name;
     var bs = c.querySelectorAll('button');
     bs[0].onclick = function () {
@@ -453,7 +448,7 @@ function renderToolbar() {
     };
     d.appendChild(c);
   });
-  d.insertAdjacentHTML('beforeend', '<span class="muted">· A nyilakra kattintva ki is próbálhatod a sétát.</span>');
+  d.insertAdjacentHTML('beforeend', '<span class="muted">· Click the arrows in the preview to try the walk-through.</span>');
 }
 function renderChecks() {
   var out = [], rs = state.rooms;
@@ -461,34 +456,34 @@ function renderChecks() {
   $('st1').className = rs.length ? 'done' : 'now';
   $('st2').className = !rs.length ? '' : hasDoors ? 'done' : 'now';
   $('st3').className = rs.length && hasDoors ? (everSaved && !dirty ? 'done' : 'now') : '';
-  if (!rs.length) { $('checks').innerHTML = '<div>Tölts fel képeket a kezdéshez.</div>'; return; }
-  // bejárhatóság a kezdő szobából
+  if (!rs.length) { $('checks').innerHTML = '<div>Add some panoramas to get started.</div>'; return; }
+  // reachability from the start room
   var seen = {}, q = [state.start];
   while (q.length) { var id = q.shift(); if (seen[id] || !room(id)) continue; seen[id] = 1; room(id).doors.forEach(function (d) { q.push(d.target); }); }
   rs.forEach(function (r) {
-    if (rs.length > 1 && !r.doors.length) out.push(['warn', '⚠️ „' + esc(r.name) + '”: nincs rajta nyíl, innen csak az alsó sávval lehet továbbmenni.']);
-    else if (rs.length > 1 && !seen[r.id]) out.push(['warn', '⚠️ „' + esc(r.name) + '”: nyíllal nem lehet ide eljutni (csak az alsó sávból).']);
+    if (rs.length > 1 && !r.doors.length) out.push(['warn', '⚠️ "' + esc(r.name) + '": no arrows – visitors can only leave via the thumbnail strip.']);
+    else if (rs.length > 1 && !seen[r.id]) out.push(['warn', '⚠️ "' + esc(r.name) + '": not reachable by arrows (only via the thumbnail strip).']);
   });
-  if (!out.length) out.push(['ok', '✅ Minden rendben, a túra letölthető!']);
-  else out.push(['', 'A figyelmeztetések nem akadályozzák a letöltést, csak javaslatok.']);
+  if (!out.length) out.push(['ok', '✅ All good – the tour is ready to download.']);
+  else out.push(['', 'Warnings don\'t block the download, they\'re just suggestions.']);
   $('checks').innerHTML = out.map(function (o) { return '<div class="' + o[0] + '">' + o[1] + '</div>'; }).join('');
 }
 
-// ---------- Gombok ----------
+// ---------- Buttons ----------
 $('drop').onclick = function () { $('fileInput').click(); };
 $('drop').onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('fileInput').click(); } };
 $('fileInput').onchange = function () { addImages(this.files); this.value = ''; };
 ['dragenter', 'dragover'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); $('drop').classList.add('over'); }); });
 ['dragleave', 'drop'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); if (ev === 'drop' || !e.relatedTarget) $('drop').classList.remove('over'); }); });
 document.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) addImages(e.dataTransfer.files); });
-$('title').onchange = function () { state.title = this.value.trim() || 'Virtuális séta'; markDirty(); };
+$('title').onchange = function () { state.title = this.value.trim() || 'Virtual tour'; markDirty(); };
 $('placeBtn').onclick = function () { setPlacing(!placing); };
 $('cancelPlace').onclick = function () { setPlacing(false); };
 $('viewBtn').onclick = function () {
   var r = room(current); r.view = currentView(); markDirty();
   rebuildViewer(current, r.view);
   loadBitmap(r.blob).then(function (b) { r.preview = makePreview(b, r.view); render(); });
-  toast('📷 Mentve: aki belép ide, ezt fogja először látni.');
+  toast('📷 Saved: visitors entering this room will see this view first.');
 };
 $('openBtn').onclick = function () { $('zipInput').click(); };
 $('zipInput').onchange = function () { if (this.files[0]) openZip(this.files[0]); this.value = ''; };
@@ -497,10 +492,10 @@ $('doneClose').onclick = function () { closeModal('doneModal'); };
 $('copyEmbed').onclick = function () {
   var t = $('embedCode'); t.select();
   (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(
-    function () { toast('📋 Kód a vágólapon.'); }, function () { document.execCommand('copy'); toast('📋 Kód a vágólapon.'); });
+    function () { toast('📋 Copied to clipboard.'); }, function () { document.execCommand('copy'); toast('📋 Copied to clipboard.'); });
 };
 
-// ---------- Letöltés (ZIP) ----------
+// ---------- Export (ZIP) ----------
 var libCache = null;
 async function fetchLibs() {
   if (libCache) return libCache;
@@ -513,17 +508,17 @@ async function exportZip() {
   if (!state.rooms.length) return;
   setPlacing(false);
   try {
-    busy('A túra összecsomagolása…');
+    busy('Packaging the tour…');
     var libs = await fetchLibs();
     var version = Date.now().toString(36);
-    var zip = new JSZip(), dir = zip.folder('seta'), kepek = dir.folder('kepek');
-    var data = { format: 1, version: version, title: state.title, start: state.start, rooms: [] };
+    var zip = new JSZip(), dir = zip.folder('tour'), images = dir.folder('images');
+    var data = { format: 1, generator: 'StaticTour', version: version, title: state.title, start: state.start, rooms: [] };
     for (var i = 0; i < state.rooms.length; i++) {
       var r = state.rooms[i];
-      busy('A túra összecsomagolása… ' + (i + 1) + ' / ' + state.rooms.length);
-      var file = r.id + '.jpg', thumb = r.id + '-kicsi.jpg';
-      kepek.file(file, r.blob);
-      kepek.file(thumb, await makeThumb(await loadBitmap(r.blob), r.view));
+      busy('Packaging the tour… ' + (i + 1) + ' / ' + state.rooms.length);
+      var file = r.id + '.jpg', thumb = r.id + '-thumb.jpg';
+      images.file(file, r.blob);
+      images.file(thumb, await makeThumb(await loadBitmap(r.blob), r.view));
       data.rooms.push({ id: r.id, name: r.name, file: file, thumb: thumb,
         view: { yaw: +r.view.yaw.toFixed(2), pitch: +r.view.pitch.toFixed(2), hfov: +r.view.hfov.toFixed(1) },
         doors: r.doors.filter(function (d) { return room(d.target); }).map(function (d) {
@@ -531,53 +526,55 @@ async function exportZip() {
         }) });
     }
     var json = JSON.stringify(data);
-    dir.file('tura.json', JSON.stringify(data, null, 2));
+    dir.file('tour.json', JSON.stringify(data, null, 2));
     dir.file('pannellum.js', libs.js);
     dir.file('pannellum.css', libs.css);
     dir.file('index.html', VIEWER_TEMPLATE
       .split('__TITLE__').join(esc(state.title))
       .split('__VERSION__').join(version)
-      .split('__TURA_JSON__').join(json.replace(/</g, '\\u003c')));
-    busy('ZIP készítése…');
+      .split('__TOUR_JSON__').join(json.replace(/</g, '\\u003c')));
+    busy('Creating ZIP…');
     var blob = await zip.generateAsync({ type: 'blob' });
-    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'seta.zip';
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tour.zip';
     document.body.appendChild(a); a.click(); a.remove();
     dirty = false; everSaved = true; busy(null); render();
     $('embedCode').value = '<div style="position:relative;width:100%;aspect-ratio:16/9;min-height:380px;border-radius:12px;overflow:hidden;">\n' +
-      '  <iframe src="/seta/" title="' + esc(state.title) + '" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="fullscreen; gyroscope; accelerometer" allowfullscreen loading="lazy"></iframe>\n</div>';
+      '  <iframe src="/tour/" title="' + esc(state.title) + '" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="fullscreen; gyroscope; accelerometer" allowfullscreen loading="lazy"></iframe>\n</div>';
     $('doneModal').classList.add('show');
   } catch (e) {
     console.error(e); busy(null);
-    alert('Nem sikerült a letöltés. Van internetkapcsolat? (A szerkesztő a 360°-os nézőt a netről tölti le.)\n\nRészletek: ' + e.message);
+    alert('Download failed. Are you online? (The editor fetches the Pannellum viewer from a CDN when packaging.)\n\nDetails: ' + e.message);
   }
 }
 
-// ---------- Korábbi túra megnyitása ----------
+// ---------- Open a previous tour ----------
 async function openZip(file) {
-  if (state.rooms.length && !confirm('A mostani szerkesztés helyére betöltöm a(z) „' + file.name + '” túrát. Mehet?')) return;
+  if (state.rooms.length && !confirm('Replace the current tour with "' + file.name + '"?')) return;
   try {
-    busy('Túra megnyitása…');
+    busy('Opening tour…');
     var zip = await JSZip.loadAsync(file);
-    var jf = Object.keys(zip.files).find(function (p) { return /(^|\/)tura\.json$/.test(p); });
-    if (!jf) throw new Error('Ez nem a szerkesztővel készült seta.zip (nincs benne tura.json).');
-    var base = jf.replace(/tura\.json$/, '');
+    // "tura.json" + "kepek/" are the legacy (pre-rename) names – still accepted so old tours open fine.
+    var jf = Object.keys(zip.files).find(function (p) { return /(^|\/)(tour|tura)\.json$/.test(p); });
+    if (!jf) throw new Error('This is not a tour.zip made with this editor (no tour.json inside).');
+    var base = jf.replace(/(tour|tura)\.json$/, '');
+    var imgDir = Object.keys(zip.files).some(function (p) { return p.indexOf(base + 'images/') === 0; }) ? 'images/' : 'kepek/';
     var data = JSON.parse(await zip.file(jf).async('string'));
     var rooms = [];
     for (var i = 0; i < data.rooms.length; i++) {
       var r = data.rooms[i];
-      busy('Túra megnyitása… ' + (i + 1) + ' / ' + data.rooms.length);
-      var entry = zip.file(base + 'kepek/' + r.file);
-      if (!entry) throw new Error('Hiányzó kép: ' + r.file);
+      busy('Opening tour… ' + (i + 1) + ' / ' + data.rooms.length);
+      var entry = zip.file(base + imgDir + r.file);
+      if (!entry) throw new Error('Missing image: ' + r.file);
       var blob = new Blob([await entry.async('arraybuffer')], { type: 'image/jpeg' });
       rooms.push({ id: r.id, name: r.name, blob: blob, url: URL.createObjectURL(blob), preview: makePreview(await loadBitmap(blob), r.view),
         view: r.view || { yaw: 0, pitch: 0, hfov: 100 },
         doors: (r.doors || []).map(function (d) { return { id: uid('d'), yaw: d.yaw, pitch: d.pitch, target: d.target }; }) });
     }
-    state = { title: data.title || 'Virtuális séta', start: data.start, rooms: rooms };
+    state = { title: data.title || 'Virtual tour', start: data.start, rooms: rooms };
     dirty = false; everSaved = true; busy(null);
     rebuildViewer(state.start);
-    toast('📂 Megnyitva: ' + rooms.length + ' helyiség. Szerkeszd, majd töltsd le újra.');
-  } catch (e) { console.error(e); busy(null); alert('Nem sikerült megnyitni.\n\n' + e.message); }
+    toast('📂 Opened: ' + rooms.length + ' room(s). Edit, then download again.');
+  } catch (e) { console.error(e); busy(null); alert('Could not open the file.\n\n' + e.message); }
 }
 
 render();

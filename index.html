@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StaticTour – self-hosted 360° virtual tours. No subscription.</title>
+<meta name="description" content="Build a 360° virtual tour in your browser, download a folder, upload it to your own server. Open source, no account, no cloud, no monthly fee.">
+<meta property="og:title" content="StaticTour – self-hosted 360° virtual tours">
+<meta property="og:description" content="The virtual tour maker that lives on YOUR server. Open source. No subscription. No cloud lock-in.">
+<meta property="og:image" content="https://davidmajzik.github.io/statictour/docs/live-tour.jpg">
+<meta property="og:url" content="https://davidmajzik.github.io/statictour/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root { --text: #1a1a1a; --muted: #666; --line: #e5e5e5; --accent: #2563eb; --bg: #fff; --code: #f4f4f4; }
+  @media (prefers-color-scheme: dark) {
+    :root { --text: #e6e6e6; --muted: #999; --line: #333; --accent: #60a5fa; --bg: #111; --code: #1c1c1c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 34px; line-height: 1.2; margin: 0 0 12px; letter-spacing: -.01em; }
+  h2 { font-size: 20px; margin: 44px 0 10px; }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 19px; color: var(--muted); margin-bottom: 24px; }
+  a { color: var(--accent); }
+  .cta { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 8px; }
+  .btn { display: inline-block; padding: 10px 18px; border-radius: 6px; font-weight: 600; text-decoration: none;
+    border: 1px solid var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn:hover { filter: brightness(1.1); }
+  .shot { display: block; width: 100%; border-radius: 8px; border: 1px solid var(--line); margin: 24px 0 6px; }
+  .cap { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 10px 0 16px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; }
+  td:last-child, th:last-child { font-weight: 600; }
+  ol, ul { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 14px; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+  .price { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 14px 0; }
+  .price div { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .price b { display: block; font-size: 22px; }
+  .price span { font-size: 13px; color: var(--muted); }
+  .wait { border: 1px solid var(--accent); border-radius: 8px; padding: 18px; margin: 16px 0; }
+  .wait h2 { margin-top: 0; }
+  .wait iframe { width: 100%; border: 0; min-height: 200px; }
+  footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>360° virtual tours that live on <em>your</em> server.</h1>
+  <p class="lead">Build the tour in your browser. Download a folder. Upload it anywhere that serves static files. No account, no cloud, no monthly fee – ever.</p>
+
+  <div class="cta">
+    <a class="btn primary" href="editor.html">Open the editor</a>
+    <a class="btn" href="https://www.tamaszotthon.hu/virtualis-seta" target="_blank" rel="noopener">See a live tour</a>
+    <a class="btn" href="https://github.com/DavidMajzik/statictour" target="_blank" rel="noopener">GitHub ★</a>
+  </div>
+  <p class="cap">Open source, MIT. Nothing you drop into the editor leaves your machine.</p>
+
+  <a href="https://www.tamaszotthon.hu/virtualis-seta" target="_blank" rel="noopener"><img class="shot" src="docs/live-tour.jpg" alt="Screenshot of a 360° tour of a nursing home: a garden path with a navigation arrow and a thumbnail strip of 17 rooms along the bottom"></a>
+  <p class="cap">A nursing home in Hungary – 17 rooms, built with StaticTour, served as plain files from a cheap shared host.</p>
+
+  <h2>The problem</h2>
+  <p>Every virtual tour product is a hosted subscription: Kuula, Matterport, Theasys, Lapentor, 3DVista. You pay monthly, the tour lives on their servers, and if you stop paying – or they pivot – it's gone. A dentist, a hotel, a church or a gallery needs <em>one tour that keeps working for five years</em>. That's not a subscription problem. It's a static-files problem.</p>
+
+  <table>
+    <tr><th></th><th>Hosted SaaS tours</th><th>StaticTour</th></tr>
+    <tr><td>Where the tour lives</td><td>Their cloud</td><td>Your server</td></tr>
+    <tr><td>Monthly fee</td><td>$10–70</td><td>$0</td></tr>
+    <tr><td>Account</td><td>Required</td><td>None</td></tr>
+    <tr><td>Still works if the vendor dies</td><td>No</td><td>Yes – it's HTML + JPG</td></tr>
+    <tr><td>Your photos uploaded to a 3rd party</td><td>Yes</td><td>Never</td></tr>
+    <tr><td>Tracking scripts in the embed</td><td>Usually</td><td>None</td></tr>
+  </table>
+
+  <h2>How it works</h2>
+  <ol>
+    <li><strong>Drop in 360° panoramas</strong> – equirectangular JPG/PNG from any 360° camera (Theta, Insta360, GoPro Max…). Resized and re-encoded in the browser.</li>
+    <li><strong>Place arrows on doors</strong> – click a door, pick the room it leads to. Set the entry view per room. The editor warns you about rooms you can't reach.</li>
+    <li><strong>Download <code>tour.zip</code></strong> – unzip, upload the <code>tour/</code> folder with FTP, cPanel, Netlify, GitHub Pages, S3, whatever. Open <code>/tour/</code>. Done.</li>
+  </ol>
+  <p>Embedding is one iframe:</p>
+<pre>&lt;iframe src="/tour/" allow="fullscreen; gyroscope; accelerometer" allowfullscreen&gt;&lt;/iframe&gt;</pre>
+  <p>Keep the ZIP – re-open it in the editor any time to add rooms or move arrows.</p>
+
+  <h2>Pricing</h2>
+  <p><strong>The editor on this page and the <a href="https://github.com/DavidMajzik/statictour">repo</a> are free. MIT. Use it for clients, fork it, rebrand it.</strong></p>
+  <p>A hosted version is planned for people who want a link instead of a repo – same self-hosted output, paid per tour, no subscription required:</p>
+  <div class="price">
+    <div><b>€0.50</b><span>1 tour</span></div>
+    <div><b>€4.50</b><span>10 tours</span></div>
+    <div><b>€6.00</b><span>20 tours</span></div>
+    <div><b>€9.99</b><span>per month, unlimited</span></div>
+  </div>
+
+  <div class="wait" id="waitlist">
+    <h2>Want the hosted version?</h2>
+    <p>Leave your email. I'll build it if enough people ask. No newsletter, one message when it ships.</p>
+    <!-- TALLY: replace the src below with your Tally form embed URL (Share → Embed → Standard) -->
+    <iframe data-tally-src="https://tally.so/embed/PLACEHOLDER?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" title="Waitlist"></iframe>
+    <script async src="https://tally.so/widgets/embed.js"></script>
+  </div>
+
+  <h2>Who built this</h2>
+  <p>I'm <a href="https://github.com/DavidMajzik">Dávid</a>, a solo developer in Hungary. I made this for a nursing home that wanted a virtual walk-through without a monthly bill. It's been running in production since. My day job is <a href="https://vatidator.com">Vatidator</a>, an EU VAT compliance tool – which is why I already have the invoicing and VAT plumbing to sell this across the EU without a three-month detour.</p>
+
+  <footer>
+    <a href="https://github.com/DavidMajzik/statictour">GitHub</a> · built on <a href="https://pannellum.org/">Pannellum</a> · MIT License · <a href="mailto:david@vatidator.com">Contact</a>
+  </footer>
+</main>
+</body>
+</html>
